@@ -6,6 +6,32 @@ import { GetVideoJobUseCase } from '@use-cases/videoJob/GetVideoJobUseCase';
 import { DownloadVideoZipUseCase } from '@use-cases/videoJob/DownloadVideoZipUseCase';
 import { UnauthorizedException } from '@domain/exceptions/ValidationException';
 
+type UploadedFile = {
+  originalname: string;
+  buffer: Buffer;
+  mimetype: string;
+};
+
+function collectUploadedFiles(req: AuthenticatedRequest): UploadedFile[] {
+  const fromArray = req.files;
+  if (Array.isArray(fromArray)) {
+    return fromArray;
+  }
+
+  if (fromArray && typeof fromArray === 'object') {
+    const fieldFiles = fromArray as Record<string, UploadedFile[]>;
+    const videos = fieldFiles.videos ?? [];
+    const single = fieldFiles.video ?? [];
+    return [...single, ...videos];
+  }
+
+  if (req.file) {
+    return [req.file];
+  }
+
+  return [];
+}
+
 export class VideoController {
   constructor(
     private readonly submitVideo: SubmitVideoUseCase,
@@ -20,8 +46,8 @@ export class VideoController {
       throw new UnauthorizedException();
     }
 
-    const file = req.file;
-    if (!file) {
+    const files = collectUploadedFiles(req);
+    if (files.length === 0) {
       res.status(400).json({
         error: 'FILE_REQUIRED',
         message: 'Arquivo de vídeo obrigatório',
@@ -29,19 +55,36 @@ export class VideoController {
       return;
     }
 
-    const job = await this.submitVideo.execute({
-      userId,
-      originalFileName: file.originalname,
-      fileBuffer: file.buffer,
-      mimeType: file.mimetype,
-    });
+    const jobs = await Promise.all(
+      files.map((file) =>
+        this.submitVideo.execute({
+          userId,
+          originalFileName: file.originalname,
+          fileBuffer: file.buffer,
+          mimeType: file.mimetype,
+        }),
+      ),
+    );
 
-    res.status(202).json({
-      id: job.id,
-      status: job.status,
-      originalFileName: job.originalFileName,
-      createdAt: job.createdAt.toISOString(),
-    });
+    if (jobs.length === 1) {
+      const job = jobs[0];
+      res.status(202).json({
+        id: job.id,
+        status: job.status,
+        originalFileName: job.originalFileName,
+        createdAt: job.createdAt.toISOString(),
+      });
+      return;
+    }
+
+    res.status(202).json(
+      jobs.map((job) => ({
+        id: job.id,
+        status: job.status,
+        originalFileName: job.originalFileName,
+        createdAt: job.createdAt.toISOString(),
+      })),
+    );
   };
 
   list = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

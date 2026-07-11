@@ -13,7 +13,7 @@ import {
 
 export type LoginResult = {
   accessToken: string;
-  user: { id: string; email: string };
+  user: { id: string; email: string; role: string };
 };
 
 export class LoginUserUseCase {
@@ -47,11 +47,12 @@ export class LoginUserUseCase {
     const accessToken = this.tokens.sign({
       sub: user.id,
       email: user.email,
+      role: user.role,
     });
 
     return {
       accessToken,
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, role: user.role },
     };
   }
 }

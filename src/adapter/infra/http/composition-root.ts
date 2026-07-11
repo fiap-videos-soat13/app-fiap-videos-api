@@ -1,3 +1,4 @@
+import path from 'node:path';
 import express, { type Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -13,6 +14,7 @@ import { GetVideoJobUseCase } from '@use-cases/videoJob/GetVideoJobUseCase';
 import { DownloadVideoZipUseCase } from '@use-cases/videoJob/DownloadVideoZipUseCase';
 import { ApplyVideoProcessingCompletedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingCompletedUseCase';
 import { ApplyVideoProcessingFailedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingFailedUseCase';
+import { ApplyVideoProcessingStartedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingStartedUseCase';
 import {
   DrizzleUserRepository,
   DrizzleVideoJobRepository,
@@ -31,6 +33,7 @@ import { OutboxRelayWorker } from '@adapter/infra/messaging/outbox/OutboxRelayWo
 import { Inbox } from '@adapter/infra/messaging/inbox/Inbox';
 import { VideoProcessingCompletedSubscriber } from '@adapter/infra/messaging/subscribers/VideoProcessingCompletedSubscriber';
 import { VideoProcessingFailedSubscriber } from '@adapter/infra/messaging/subscribers/VideoProcessingFailedSubscriber';
+import { VideoProcessingStartedSubscriber } from '@adapter/infra/messaging/subscribers/VideoProcessingStartedSubscriber';
 import { SagaMetricsService } from '@adapter/infra/observability/SagaMetricsService';
 import { setupSwagger } from './swagger/setup';
 import { AuthController } from '@adapter/driver/controllers/AuthController';
@@ -38,7 +41,7 @@ import { VideoController } from '@adapter/driver/controllers/VideoController';
 import { buildAuthRoutes } from '@adapter/driver/routes/auth.routes';
 import { buildVideoRoutes } from '@adapter/driver/routes/videos.routes';
 import { correlationMiddleware } from './middleware/correlation.middleware';
-import { createAuthMiddleware } from './middleware/auth.middleware';
+import { AuthMiddleware } from './middleware/auth.middleware';
 import {
   createMetricsMiddleware,
   metricsHandler,
@@ -51,6 +54,7 @@ export type AppContext = {
   app: Express;
   amqp: AmqpConnection;
   cache: RedisCacheAdapter;
+  startedSubscriber: VideoProcessingStartedSubscriber;
   completedSubscriber: VideoProcessingCompletedSubscriber;
   failedSubscriber: VideoProcessingFailedSubscriber;
 };
@@ -129,7 +133,18 @@ export function buildApp(): AppContext {
     cache,
     logger,
   );
+  const applyStarted = new ApplyVideoProcessingStartedUseCase(
+    videoJobs,
+    cache,
+    logger,
+  );
 
+  const startedSubscriber = new VideoProcessingStartedSubscriber(
+    amqp,
+    inbox,
+    logger,
+    applyStarted,
+  );
   const completedSubscriber = new VideoProcessingCompletedSubscriber(
     amqp,
     inbox,
@@ -152,9 +167,16 @@ export function buildApp(): AppContext {
   );
 
   const app = express();
-  app.use(helmet());
+  const auth = AuthMiddleware.initialize(tokens);
+  const publicDir =
+    process.env.NODE_ENV === 'production'
+      ? path.join(__dirname, '../../../public')
+      : path.join(process.cwd(), 'public');
+
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(cors());
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
   app.use(correlationMiddleware);
   app.use(createMetricsMiddleware(registry, httpMetrics));
 
@@ -178,8 +200,18 @@ export function buildApp(): AppContext {
 
   setupSwagger(app);
 
-  app.use('/auth', buildAuthRoutes(authController));
-  app.use('/videos', createAuthMiddleware(tokens), buildVideoRoutes(videoController));
+  app.get('/login', auth.redirectIfAuthenticated, (_req, res) => {
+    res.sendFile(path.join(publicDir, 'login.html'));
+  });
+  app.get('/status', auth.protectPage, (_req, res) => {
+    res.sendFile(path.join(publicDir, 'status.html'));
+  });
+  app.get('/status/:id', auth.protectPage, (_req, res) => {
+    res.sendFile(path.join(publicDir, 'status.html'));
+  });
+
+  app.use('/auth', buildAuthRoutes(authController, auth));
+  app.use('/videos', auth.authenticateApi, buildVideoRoutes(videoController));
 
   app.use(errorHandler);
 
@@ -187,5 +219,5 @@ export function buildApp(): AppContext {
     void outboxRelay.tick();
   });
 
-  return { app, amqp, cache, completedSubscriber, failedSubscriber };
+  return { app, amqp, cache, startedSubscriber, completedSubscriber, failedSubscriber };
 }

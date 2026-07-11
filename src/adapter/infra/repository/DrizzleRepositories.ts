@@ -13,6 +13,7 @@ import { UserDbAssembler } from '@adapter/infra/repository/assemblers/UserDbAsse
 import { VideoJobDbAssembler } from '@adapter/infra/repository/assemblers/VideoJobDbAssembler';
 import type { VideoJob } from '@domain/entities/VideoJob';
 import type { User } from '@domain/entities/User';
+import { UserRole } from '@domain/enums/UserRole';
 
 export class DrizzleUserRepository extends UserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -33,10 +34,14 @@ export class DrizzleUserRepository extends UserRepository {
     return row ? UserDbAssembler.toDomain(row) : null;
   }
 
-  async create(email: string, passwordHash: string): Promise<User> {
+  async create(
+    email: string,
+    passwordHash: string,
+    role: UserRole = UserRole.User,
+  ): Promise<User> {
     const [row] = await getDb()
       .insert(users)
-      .values({ email, passwordHash })
+      .values({ email, passwordHash, role })
       .returning();
     if (!row) {
       throw new Error('Failed to create user');
@@ -145,6 +150,18 @@ export class DrizzleVideoJobRepository extends VideoJobRepository {
       .set({
         status: VideoJobStatus.Failed,
         errorMessage,
+        updatedAt: new Date(),
+      })
+      .where(eq(videoJobs.id, jobId))
+      .returning();
+    return row ? VideoJobDbAssembler.toDomain(row) : null;
+  }
+
+  async markProcessing(jobId: string): Promise<VideoJob | null> {
+    const [row] = await getDb()
+      .update(videoJobs)
+      .set({
+        status: VideoJobStatus.Processing,
         updatedAt: new Date(),
       })
       .where(eq(videoJobs.id, jobId))

@@ -2,6 +2,7 @@ import { ConflictException } from '@domain/exceptions/ValidationException';
 import { UserRepository } from '@domain/repositories/VideoRepositories';
 import { PasswordHasher } from '@domain/services/CoreServices';
 import { ValidationService } from '@application/services/ValidationService';
+import { UserRole } from '@domain/enums/UserRole';
 import {
   RegisterUserSchema,
   type RegisterUserValidationType,
@@ -28,6 +29,7 @@ export class RegisterUserUseCase {
     }
 
     const passwordHash = await this.passwordHasher.hash(data.password);
-    return this.users.create(data.email, passwordHash);
+    const role = data.role === UserRole.Admin ? UserRole.Admin : UserRole.User;
+    return this.users.create(data.email, passwordHash, role);
   }
 }

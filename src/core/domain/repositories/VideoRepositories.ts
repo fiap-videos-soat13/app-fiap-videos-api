@@ -1,4 +1,5 @@
 import type { User } from '@domain/entities/User';
+import type { UserRole } from '@domain/enums/UserRole';
 import type { VideoJob } from '@domain/entities/VideoJob';
 import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
 
@@ -10,7 +11,11 @@ export type OnVideoJobCreatedHook = (
 export abstract class UserRepository {
   abstract findByEmail(email: string): Promise<User | null>;
   abstract findById(id: string): Promise<User | null>;
-  abstract create(email: string, passwordHash: string): Promise<User>;
+  abstract create(
+    email: string,
+    passwordHash: string,
+    role?: UserRole,
+  ): Promise<User>;
 }
 
 export abstract class VideoJobRepository {
@@ -40,4 +45,6 @@ export abstract class VideoJobRepository {
     jobId: string,
     errorMessage: string,
   ): Promise<VideoJob | null>;
+
+  abstract markProcessing(jobId: string): Promise<VideoJob | null>;
 }

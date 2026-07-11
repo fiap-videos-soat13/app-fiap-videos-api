@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login — FIAP Videos</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: #1e293b;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      h1 { margin: 0 0 1.5rem; font-size: 1.5rem; }
+      label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; color: #94a3b8; }
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-size: 1rem;
+      }
+      button {
+        width: 100%;
+        padding: 0.75rem;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      button:hover { background: #2563eb; }
+      .error { color: #f87171; font-size: 0.875rem; margin-bottom: 1rem; display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>FIAP Videos</h1>
+      <p id="error" class="error"></p>
+      <form id="loginForm" method="POST" action="/auth/login/web">
+        <input type="hidden" name="redirect" id="redirect" value="/status" />
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" required autocomplete="username" />
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password" />
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect');
+      if (redirect && redirect.startsWith('/')) {
+        document.getElementById('redirect').value = redirect;
+      }
+      const error = params.get('error');
+      if (error) {
+        const el = document.getElementById('error');
+        el.textContent = decodeURIComponent(error);
+        el.style.display = 'block';
+      }
+    </script>
+  </body>
+</html>

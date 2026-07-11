@@ -13,7 +13,7 @@ export class BcryptPasswordHasher extends PasswordHasher {
   }
 }
 
-type JwtPayload = { sub: string; email: string };
+type JwtPayload = { sub: string; email: string; role: string };
 
 export class JwtTokenService extends TokenService {
   constructor(
@@ -38,12 +38,18 @@ export class JwtTokenService extends TokenService {
         decoded === null ||
         !('sub' in decoded) ||
         !('email' in decoded) ||
+        !('role' in decoded) ||
         typeof decoded.sub !== 'string' ||
-        typeof decoded.email !== 'string'
+        typeof decoded.email !== 'string' ||
+        typeof decoded.role !== 'string'
       ) {
         throw new UnauthorizedException('Token inválido');
       }
-      return { sub: decoded.sub, email: decoded.email };
+      return {
+        sub: decoded.sub,
+        email: decoded.email,
+        role: decoded.role,
+      };
     } catch {
       throw new UnauthorizedException('Token inválido');
     }

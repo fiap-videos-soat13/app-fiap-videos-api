@@ -1,5 +1,7 @@
 import { LoginUserUseCase } from '@use-cases/auth/LoginUserUseCase';
 import { UnauthorizedException } from '@domain/exceptions/ValidationException';
+import { UserRole } from '@domain/enums/UserRole';
+import { User } from '@domain/entities/User';
 import type { UserRepository } from '@domain/repositories/VideoRepositories';
 import type {
   PasswordHasher,
@@ -9,12 +11,13 @@ import type {
 import type { ValidationService } from '@application/services/ValidationService';
 
 describe('LoginUserUseCase', () => {
-  const user = {
-    id: '11111111-1111-4111-8111-111111111111',
-    email: 'user@fiap.com',
-    passwordHash: 'hash',
-    createdAt: new Date(),
-  };
+  const user = new User(
+    '11111111-1111-4111-8111-111111111111',
+    'user@fiap.com',
+    'hash',
+    UserRole.User,
+    new Date(),
+  );
 
   let users: jest.Mocked<UserRepository>;
   let hasher: jest.Mocked<PasswordHasher>;

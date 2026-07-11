@@ -4,7 +4,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && cp -r src/adapter/infra/database/migrations dist/adapter/infra/database/",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && cp -r src/adapter/infra/database/migrations dist/adapter/infra/database/ && cp -r public dist/public",
     "start": "node dist/adapter/infra/http/Main.js",
     "start:dev": "NODE_ENV=development ts-node -r tsconfig-paths/register src/adapter/infra/http/Main.ts",
     "lint": "eslint \"src/**/*.ts\" --fix",

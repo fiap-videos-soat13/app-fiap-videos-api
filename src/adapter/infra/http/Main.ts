@@ -9,9 +9,16 @@ import {
 async function bootstrap(): Promise<void> {
   await runMigrations();
   await initializeConnection();
-  const { app, amqp, cache, completedSubscriber, failedSubscriber } =
-    buildApp();
+  const {
+    app,
+    amqp,
+    cache,
+    startedSubscriber,
+    completedSubscriber,
+    failedSubscriber,
+  } = buildApp();
   await amqp.connect();
+  await startedSubscriber.start();
   await completedSubscriber.start();
   await failedSubscriber.start();
 
@@ -21,9 +28,12 @@ async function bootstrap(): Promise<void> {
   const server = app.listen(port, host, () => {
     console.log(`API FIAP Videos rodando em http://${host}:${port}`);
     console.log(`Swagger em http://${host}:${port}/api/docs`);
+    console.log(`Login em http://${host}:${port}/login`);
+    console.log(`Status em http://${host}:${port}/status`);
   });
 
   const shutdown = async (): Promise<void> => {
+    await startedSubscriber.stop();
     await completedSubscriber.stop();
     await failedSubscriber.stop();
     server.close();

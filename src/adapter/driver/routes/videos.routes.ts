@@ -11,7 +11,14 @@ export function buildVideoRoutes(controller: VideoController): Router {
     limits: { fileSize: maxBytes },
   });
 
-  router.post('/', upload.single('video'), controller.submit);
+  router.post(
+    '/',
+    upload.fields([
+      { name: 'video', maxCount: 1 },
+      { name: 'videos', maxCount: 10 },
+    ]),
+    controller.submit,
+  );
   router.get('/', controller.list);
   router.get('/:id/download', controller.download);
   router.get('/:id', controller.getById);

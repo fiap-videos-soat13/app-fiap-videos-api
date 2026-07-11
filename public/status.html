@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Status dos Vídeos — FIAP Videos</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        margin: 0;
+        padding: 2rem;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+      h1 { margin: 0; font-size: 1.5rem; }
+      .logout {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.875rem;
+      }
+      .logout:hover { color: #e2e8f0; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #1e293b;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      th, td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid #334155;
+      }
+      th { background: #334155; font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
+      tr:last-child td { border-bottom: none; }
+      .status {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .status-pending { background: #475569; color: #e2e8f0; }
+      .status-processing { background: #1d4ed8; color: #dbeafe; }
+      .status-completed { background: #166534; color: #bbf7d0; }
+      .status-failed { background: #991b1b; color: #fecaca; }
+      .empty { text-align: center; color: #64748b; padding: 2rem; }
+      .highlight { background: #1e3a5f; }
+      a.download { color: #60a5fa; text-decoration: none; }
+      a.download:hover { text-decoration: underline; }
+      .error { color: #f87171; text-align: center; padding: 2rem; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Status dos Vídeos</h1>
+      <form method="POST" action="/auth/logout/web" style="margin:0">
+        <button type="submit" class="logout" style="background:none;border:none;cursor:pointer">Sair</button>
+      </form>
+    </header>
+    <div id="content"><p class="empty">Carregando...</p></div>
+    <script>
+      const highlightId = window.location.pathname.match(/\/status\/([^/]+)/)?.[1] ?? null;
+
+      async function loadVideos() {
+        const content = document.getElementById('content');
+        try {
+          const res = await fetch('/videos', { credentials: 'same-origin' });
+          if (res.status === 401) {
+            window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+            return;
+          }
+          if (!res.ok) throw new Error('Falha ao carregar vídeos');
+          const videos = await res.json();
+          if (videos.length === 0) {
+            content.innerHTML = '<p class="empty">Nenhum vídeo enviado ainda.</p>';
+            return;
+          }
+          const rows = videos.map((v) => {
+            const statusClass = 'status-' + v.status;
+            const download = v.status === 'completed'
+              ? `<a class="download" href="/videos/${v.id}/download">Baixar ZIP</a>`
+              : '—';
+            const highlight = highlightId === v.id ? ' class="highlight"' : '';
+            return `<tr${highlight}>
+              <td>${v.originalFileName}</td>
+              <td><span class="status ${statusClass}">${v.status}</span></td>
+              <td>${new Date(v.createdAt).toLocaleString('pt-BR')}</td>
+              <td>${download}</td>
+            </tr>`;
+          }).join('');
+          content.innerHTML = `<table>
+            <thead><tr><th>Arquivo</th><th>Status</th><th>Enviado em</th><th>Download</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>`;
+        } catch (err) {
+          content.innerHTML = '<p class="error">Erro ao carregar status dos vídeos.</p>';
+        }
+      }
+
+      loadVideos();
+      setInterval(loadVideos, 5000);
+    </script>
+  </body>
+</html>

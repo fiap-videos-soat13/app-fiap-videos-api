@@ -20,7 +20,13 @@ export abstract class PasswordHasher {
   abstract compare(plain: string, hash: string): Promise<boolean>;
 }
 
+export type TokenPayload = {
+  sub: string;
+  email: string;
+  role: string;
+};
+
 export abstract class TokenService {
-  abstract sign(payload: { sub: string; email: string }): string;
-  abstract verify(token: string): { sub: string; email: string };
+  abstract sign(payload: TokenPayload): string;
+  abstract verify(token: string): TokenPayload;
 }

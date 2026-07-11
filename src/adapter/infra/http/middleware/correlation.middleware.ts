@@ -5,6 +5,7 @@ export type AuthenticatedRequest = Request & {
   correlationId?: string;
   userId?: string;
   userEmail?: string;
+  userRole?: string;
 };
 
 export function correlationMiddleware(
