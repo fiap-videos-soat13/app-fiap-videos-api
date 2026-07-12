@@ -1,0 +1,96 @@
+# Docker Compose for app-fiap-videos-api (isolated local development)
+# Usage:
+#   1. Start shared RabbitMQ: cd ../app-fiap-videos-infra/docker && docker compose up rabbitmq -d
+#   2. docker compose up -d --build
+#
+# For the full stack, use ../app-fiap-videos-infra/docker/docker-compose.yml instead.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fiap-videos-api-pg
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: fiap
+      POSTGRES_PASSWORD: fiap
+      POSTGRES_DB: fiap_videos_api
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U fiap -d fiap_videos_api']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - api-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fiap-videos-api-redis
+    ports:
+      - '6380:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - api-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fiap-videos-api
+    ports:
+      - '3000:3000'
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: 3000
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      DATABASE_URL: postgresql://fiap:fiap@postgres:5432/fiap_videos_api
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://fiap:fiap@host.docker.internal:5673/
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      STORAGE_PATH: /app/storage
+      VIDEO_EVENTS_EXCHANGE: fiap-videos.events
+      VIDEO_EVENTS_DLX: fiap-videos.events.dlx
+      RABBITMQ_CONNECTION_NAME: api
+    volumes:
+      - video_storage:/app/storage
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://127.0.0.1:3000/health/live',
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - api-network
+
+volumes:
+  pgdata:
+  video_storage:
+
+networks:
+  api-network:
+    driver: bridge
