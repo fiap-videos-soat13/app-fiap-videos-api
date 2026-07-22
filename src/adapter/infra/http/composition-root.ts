@@ -19,7 +19,7 @@ import {
   DrizzleUserRepository,
   DrizzleVideoJobRepository,
 } from '@adapter/infra/repository/DrizzleRepositories';
-import { LocalObjectStorage } from '@adapter/infra/storage/LocalObjectStorage';
+import { createObjectStorage } from '@adapter/infra/storage/storageFactory';
 import { VideoProcessingRequestedEnvelopeBuilder } from '@adapter/infra/messaging/builders/VideoProcessingRequestedEnvelopeBuilder';
 import {
   ConsoleLoggerService,
@@ -69,8 +69,7 @@ export function buildApp(): AppContext {
 
   const users = new DrizzleUserRepository();
   const videoJobs = new DrizzleVideoJobRepository();
-  const storagePath = process.env.STORAGE_PATH?.trim() || './storage';
-  const storage = new LocalObjectStorage(storagePath);
+  const storage = createObjectStorage();
   const events = new VideoProcessingRequestedEnvelopeBuilder();
 
   const jwtSecret = process.env.JWT_SECRET?.trim();
