@@ -15,10 +15,10 @@ async function main(): Promise<void> {
   const adminEmail =
     process.env.SEED_ADMIN_EMAIL?.trim() || 'admin@fiap-videos.local';
   const adminPassword =
-    process.env.SEED_ADMIN_PASSWORD?.trim() || 'admin12345';
+    process.env.SEED_ADMIN_PASSWORD?.trim() || 'Admin12345';
   const demoEmail =
     process.env.SEED_USER_EMAIL?.trim() || 'demo@fiap-videos.local';
-  const demoPassword = process.env.SEED_USER_PASSWORD?.trim() || 'demo12345';
+  const demoPassword = process.env.SEED_USER_PASSWORD?.trim() || 'Demo12345';
 
   const db = getDb();
 
