@@ -42,7 +42,7 @@ describe('RegisterUserUseCase', () => {
 
     const result = await useCase.execute({
       email: 'new@fiap.com',
-      password: 'secret12345',
+      password: 'Secret12345',
       role: UserRole.User,
     });
 
@@ -61,7 +61,7 @@ describe('RegisterUserUseCase', () => {
     await expect(
       useCase.execute({
         email: 'new@fiap.com',
-        password: 'secret12345',
+        password: 'Secret12345',
         role: UserRole.User,
       }),
     ).rejects.toBeInstanceOf(ConflictException);
@@ -74,7 +74,7 @@ describe('RegisterUserUseCase', () => {
 
     await useCase.execute({
       email: 'new@fiap.com',
-      password: 'secret12345',
+      password: 'Secret12345',
       role: 'invalid' as UserRole,
     });
 

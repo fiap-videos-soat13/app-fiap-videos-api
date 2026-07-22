@@ -49,6 +49,10 @@ import {
 } from './middleware/metrics.middleware';
 import { errorHandler } from './error-handler';
 import { checkDatabaseConnectivity } from '@adapter/infra/database/client';
+import {
+  resolveCorsOptions,
+  shouldTrustProxy,
+} from './security/httpSecurityConfig';
 
 export type AppContext = {
   app: Express;
@@ -168,13 +172,18 @@ export function buildApp(): AppContext {
 
   const app = express();
   const auth = AuthMiddleware.initialize(tokens);
+
+  if (shouldTrustProxy()) {
+    app.set('trust proxy', 1);
+  }
+
   const publicDir =
     process.env.NODE_ENV === 'production'
       ? path.join(__dirname, '../../../public')
       : path.join(process.cwd(), 'public');
 
   app.use(helmet({ contentSecurityPolicy: false }));
-  app.use(cors());
+  app.use(cors(resolveCorsOptions()));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(correlationMiddleware);
