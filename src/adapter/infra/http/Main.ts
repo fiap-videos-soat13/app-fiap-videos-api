@@ -4,11 +4,19 @@ import {
   runMigrations,
   initializeConnection,
   closeDb,
+  getDb,
 } from '@adapter/infra/database/client';
+import { bootstrapUsers } from '@adapter/infra/database/bootstrapUsers';
 
 async function bootstrap(): Promise<void> {
   await runMigrations();
   await initializeConnection();
+
+  if (process.env.BOOTSTRAP_USERS === 'true') {
+    const includeDemoUser = process.env.NODE_ENV !== 'production';
+    await bootstrapUsers(getDb(), { includeDemoUser });
+  }
+
   const {
     app,
     amqp,

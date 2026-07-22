@@ -74,14 +74,16 @@ yarn db:migrate
 yarn db:seed    # creates admin + demo users (first run only)
 ```
 
+Alternatively, set `BOOTSTRAP_USERS=true` in `.env` before `yarn start` or Docker startup — the API creates the admin user (and demo user outside production) on boot. In production, `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` are required when bootstrap is enabled.
+
 Migrations run automatically on `yarn start` / Docker startup too, but running them once before dev avoids race conditions.
 
 **Seed credentials** (from `.env.example`):
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | `admin@fiap-videos.local` | `admin12345` |
-| User | `demo@fiap-videos.local` | `demo12345` |
+| Admin | `admin@fiap-videos.local` | `Admin12345` |
+| User | `demo@fiap-videos.local` | `Demo12345` |
 
 ### Step 4 — Start the dev server
 
