@@ -14,6 +14,8 @@
     "typecheck": "tsc --noEmit --skipLibCheck",
     "test:unit": "jest --config jest.config.json",
     "test:cov": "jest --config jest.config.json --coverage",
+    "test:integration": "jest --config jest.integration.config.json",
+    "test:integration:ci": "jest --config jest.integration.config.json --runInBand",
     "db:migrate": "ts-node -r tsconfig-paths/register scripts/migrate.ts",
     "db:seed": "ts-node -r tsconfig-paths/register scripts/seed.ts",
     "db:generate": "./scripts/drizzle-kit.sh generate",

@@ -2,8 +2,27 @@ import { ApplyVideoProcessingStartedUseCase } from '@use-cases/videoJob/ApplyVid
 import { ApplyVideoProcessingCompletedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingCompletedUseCase';
 import { ApplyVideoProcessingFailedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingFailedUseCase';
 import { EntityNotFoundException } from '@domain/exceptions/ValidationException';
+import { VideoJob } from '@domain/entities/VideoJob';
+import { VideoJobStatus } from '@domain/enums/VideoJobStatus';
 import type { VideoJobRepository } from '@domain/repositories/VideoRepositories';
 import type { CachePort, LoggerService } from '@domain/services/CoreServices';
+
+function makeJob(): VideoJob {
+  const now = new Date();
+  return new VideoJob(
+    'job-id',
+    'user-id',
+    'video.mp4',
+    'videos/job-id-video.mp4',
+    VideoJobStatus.Processing,
+    null,
+    null,
+    'corr-id',
+    now,
+    now,
+    null,
+  );
+}
 
 describe('ApplyVideoProcessing status use cases', () => {
   let videoJobs: jest.Mocked<VideoJobRepository>;
@@ -29,7 +48,7 @@ describe('ApplyVideoProcessing status use cases', () => {
 
   describe('ApplyVideoProcessingStartedUseCase', () => {
     it('marks job processing and invalidates cache', async () => {
-      videoJobs.markProcessing.mockResolvedValue(true);
+      videoJobs.markProcessing.mockResolvedValue(makeJob());
       const useCase = new ApplyVideoProcessingStartedUseCase(
         videoJobs,
         cache,
@@ -43,7 +62,7 @@ describe('ApplyVideoProcessing status use cases', () => {
     });
 
     it('throws when job is not found', async () => {
-      videoJobs.markProcessing.mockResolvedValue(false);
+      videoJobs.markProcessing.mockResolvedValue(null);
       const useCase = new ApplyVideoProcessingStartedUseCase(
         videoJobs,
         cache,
@@ -58,7 +77,7 @@ describe('ApplyVideoProcessing status use cases', () => {
 
   describe('ApplyVideoProcessingCompletedUseCase', () => {
     it('marks job completed and invalidates cache', async () => {
-      videoJobs.markCompleted.mockResolvedValue(true);
+      videoJobs.markCompleted.mockResolvedValue(makeJob());
       const useCase = new ApplyVideoProcessingCompletedUseCase(
         videoJobs,
         cache,
@@ -79,7 +98,7 @@ describe('ApplyVideoProcessing status use cases', () => {
     });
 
     it('throws when job is not found', async () => {
-      videoJobs.markCompleted.mockResolvedValue(false);
+      videoJobs.markCompleted.mockResolvedValue(null);
       const useCase = new ApplyVideoProcessingCompletedUseCase(
         videoJobs,
         cache,
@@ -98,7 +117,7 @@ describe('ApplyVideoProcessing status use cases', () => {
 
   describe('ApplyVideoProcessingFailedUseCase', () => {
     it('marks job failed and invalidates cache', async () => {
-      videoJobs.markFailed.mockResolvedValue(true);
+      videoJobs.markFailed.mockResolvedValue(makeJob());
       const useCase = new ApplyVideoProcessingFailedUseCase(
         videoJobs,
         cache,
@@ -119,7 +138,7 @@ describe('ApplyVideoProcessing status use cases', () => {
     });
 
     it('throws when job is not found', async () => {
-      videoJobs.markFailed.mockResolvedValue(false);
+      videoJobs.markFailed.mockResolvedValue(null);
       const useCase = new ApplyVideoProcessingFailedUseCase(
         videoJobs,
         cache,

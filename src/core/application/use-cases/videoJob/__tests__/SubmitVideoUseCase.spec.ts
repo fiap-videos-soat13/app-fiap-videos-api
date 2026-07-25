@@ -5,6 +5,7 @@ import { User } from '@domain/entities/User';
 import { VideoJob } from '@domain/entities/VideoJob';
 import { VideoJobStatus } from '@domain/enums/VideoJobStatus';
 import type {
+  OnVideoJobCreatedHook,
   UserRepository,
   VideoJobRepository,
 } from '@domain/repositories/VideoRepositories';
@@ -57,7 +58,10 @@ describe('SubmitVideoUseCase', () => {
       create: jest.fn(),
     };
     videoJobs = {
-      createJob: jest.fn().mockImplementation(async (input, onCreated) => {
+      createJob: jest.fn().mockImplementation(async (
+        _input: unknown,
+        onCreated: OnVideoJobCreatedHook,
+      ) => {
         await onCreated(job, jest.fn());
         return job;
       }),

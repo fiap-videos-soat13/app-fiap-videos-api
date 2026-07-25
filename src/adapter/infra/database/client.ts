@@ -20,14 +20,18 @@ export function getPool(): Pool {
     if (!url) {
       throw new Error('DATABASE_URL is required');
     }
-    pool = new Pool({
-      connectionString: url,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 15000,
-    });
+    pool = createPool(url);
   }
   return pool;
+}
+
+function createPool(url: string): Pool {
+  return new Pool({
+    connectionString: url,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 15000,
+  });
 }
 
 export function getDb(): AppDatabase {
@@ -64,4 +68,11 @@ export async function closeDb(): Promise<void> {
   await pool?.end();
   pool = null;
   db = null;
+}
+
+export async function resetDatabase(url?: string): Promise<void> {
+  await closeDb();
+  if (url) {
+    process.env.DATABASE_URL = url;
+  }
 }

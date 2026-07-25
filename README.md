@@ -49,7 +49,7 @@ docker compose ps
 
 | Dependency | Host port | Used by API |
 |------------|-----------|-------------|
-| PostgreSQL | `5433` | `DATABASE_URL` |
+| PostgreSQL | `5432` | `DATABASE_URL` |
 | Redis | `6380` | `REDIS_URL` |
 | RabbitMQ | `5673` (UI: `15673`) | `RABBITMQ_URL` — **single shared broker** (infra) |
 
@@ -155,7 +155,7 @@ docker compose up --build
 docker compose up --build
 ```
 
-Starts API + Postgres (`:5433`) + Redis (`:6380`). Requires shared RabbitMQ from infra (`docker compose up rabbitmq -d` in `app-fiap-videos-infra/docker`).
+Starts API + Postgres (`:5432`) + Redis (`:6380`). Requires shared RabbitMQ from infra (`docker compose up rabbitmq -d` in `app-fiap-videos-infra/docker`).
 
 ## Endpoints
 
@@ -187,12 +187,29 @@ See [`.env.example`](./.env.example). Required: `DATABASE_URL`, `REDIS_URL`, `RA
 
 ```bash
 yarn lint:ci
+yarn format:check
 yarn typecheck
 yarn test:unit
+yarn test:cov
+yarn test:integration       # requires Postgres (see script below)
 yarn build
 ```
 
-GitHub Actions runs the same checks on push/PR to `main`.
+Run integration tests with a temporary Postgres container:
+
+```bash
+./scripts/run-integration-tests.sh
+```
+
+Or with your own database:
+
+```bash
+export DATABASE_URL=postgresql://fiap:fiap@localhost:5432/fiap_videos_api_test
+yarn db:migrate
+yarn test:integration
+```
+
+GitHub Actions runs `build`, `lint`, `type-check`, `test-unit`, `test-integration`, `security-audit`, and a `ci-success` gate on every push and pull request to `main`.
 
 ## Architecture
 
