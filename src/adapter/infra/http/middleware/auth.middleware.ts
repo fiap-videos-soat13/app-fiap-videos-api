@@ -9,6 +9,29 @@ import type { AuthenticatedRequest } from './correlation.middleware';
 
 const AUTH_COOKIE = 'fiap_token';
 
+function isProduction(): boolean {
+  return process.env.NODE_ENV === 'production';
+}
+
+function buildAuthCookieValue(token: string, maxAge?: number): string {
+  const parts = [
+    `${AUTH_COOKIE}=${token}`,
+    'Path=/',
+    'HttpOnly',
+    `SameSite=${isProduction() ? 'Strict' : 'Lax'}`,
+  ];
+
+  if (isProduction()) {
+    parts.push('Secure');
+  }
+
+  if (maxAge !== undefined) {
+    parts.push(`Max-Age=${maxAge}`);
+  }
+
+  return parts.join('; ');
+}
+
 function parseCookies(req: Request): Record<string, string> {
   const header = req.header('cookie');
   if (!header) {
@@ -151,16 +174,10 @@ export class AuthMiddleware {
   };
 
   static setAuthCookie(res: Response, token: string): void {
-    res.setHeader(
-      'Set-Cookie',
-      `${AUTH_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax`,
-    );
+    res.setHeader('Set-Cookie', buildAuthCookieValue(token));
   }
 
   static clearAuthCookie(res: Response): void {
-    res.setHeader(
-      'Set-Cookie',
-      `${AUTH_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
-    );
+    res.setHeader('Set-Cookie', buildAuthCookieValue('', 0));
   }
 }

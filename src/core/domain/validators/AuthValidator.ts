@@ -1,9 +1,10 @@
 import { z } from 'zod';
 import { UserRole } from '@domain/enums/UserRole';
+import { strongPasswordSchema } from '@validators/PasswordPolicy';
 
 export const RegisterUserSchema = z.object({
   email: z.email(),
-  password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+  password: strongPasswordSchema,
   role: z.enum([UserRole.Admin, UserRole.User]).optional(),
 });
 

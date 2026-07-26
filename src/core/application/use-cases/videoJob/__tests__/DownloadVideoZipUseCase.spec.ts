@@ -83,7 +83,7 @@ describe('DownloadVideoZipUseCase', () => {
     );
     storage.zipExists.mockResolvedValue(true);
     const stream = Readable.from(['zip']);
-    storage.getZipStream.mockReturnValue(stream);
+    storage.getZipStream.mockResolvedValue(stream);
 
     const result = await useCase.execute('user-id', 'job-id');
 

@@ -32,7 +32,7 @@ export class DownloadVideoZipUseCase {
       throw new EntityNotFoundException('Arquivo zip não encontrado no storage');
     }
 
-    const stream = this.storage.getZipStream(job.zipStorageKey);
+    const stream = await this.storage.getZipStream(job.zipStorageKey);
     const baseName = job.originalFileName.replace(/\.[^.]+$/, '');
     return { stream, fileName: `${baseName}-frames.zip` };
   }
