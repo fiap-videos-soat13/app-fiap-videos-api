@@ -24,13 +24,21 @@ export class LocalObjectStorage extends ObjectStoragePort {
     return storageKey;
   }
 
-  getZipStream(zipStorageKey: string): NodeJS.ReadableStream {
-    const fullPath = path.join(this.storagePath, zipStorageKey);
+  private resolveZipPath(zipStorageKey: string): string {
+    const normalized = zipStorageKey.replace(/\\/g, '/');
+    if (normalized.startsWith('zips/')) {
+      return path.join(this.storagePath, zipStorageKey);
+    }
+    return path.join(this.storagePath, 'zips', zipStorageKey);
+  }
+
+  async getZipStream(zipStorageKey: string): Promise<NodeJS.ReadableStream> {
+    const fullPath = this.resolveZipPath(zipStorageKey);
     return createReadStream(fullPath);
   }
 
   async zipExists(zipStorageKey: string): Promise<boolean> {
-    const fullPath = path.join(this.storagePath, zipStorageKey);
+    const fullPath = this.resolveZipPath(zipStorageKey);
     try {
       await access(fullPath, constants.F_OK);
       return true;
