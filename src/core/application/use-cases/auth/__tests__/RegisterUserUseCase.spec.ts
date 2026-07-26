@@ -47,7 +47,7 @@ describe('RegisterUserUseCase', () => {
     });
 
     expect(result).toBe(createdUser);
-    expect(hasher.hash).toHaveBeenCalledWith('secret12345');
+    expect(hasher.hash).toHaveBeenCalledWith('Secret12345');
     expect(users.create).toHaveBeenCalledWith(
       'new@fiap.com',
       'hashed-password',

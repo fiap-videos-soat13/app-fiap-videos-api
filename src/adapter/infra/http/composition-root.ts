@@ -3,7 +3,6 @@ import express, { type Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { Registry } from 'prom-client';
-import cron from 'node-cron';
 import { ValidationService } from '@application/services/ValidationService';
 import { ExpressValidationErrorHandler } from '@adapter/infra/services/ExpressValidationErrorHandler';
 import { RegisterUserUseCase } from '@use-cases/auth/RegisterUserUseCase';
@@ -223,9 +222,14 @@ export function buildApp(): AppContext {
 
   app.use(errorHandler);
 
-  cron.schedule('*/5 * * * * *', () => {
-    void outboxRelay.tick();
-  });
+  const outboxRelayIntervalMs =
+    Number(process.env.OUTBOX_RELAY_INTERVAL_MS) || 5000;
+  const scheduleNextRelayTick = () => {
+    setTimeout(() => {
+      void outboxRelay.tick().then(scheduleNextRelayTick);
+    }, outboxRelayIntervalMs);
+  };
+  scheduleNextRelayTick();
 
   return { app, amqp, cache, startedSubscriber, completedSubscriber, failedSubscriber };
 }
