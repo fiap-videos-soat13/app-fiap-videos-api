@@ -10,6 +10,80 @@ HTTP edge service (Express): authentication, video upload, status listing, and z
 - Consume processor events to update job status
 - Cache user video lists in Redis (30s TTL)
 
+## Architecture
+
+### Role in the platform
+
+The API is the **HTTP edge** of FIAP Videos — the only user-facing service. It handles auth, uploads, job status, and zip downloads. Workflow is **choreographed** via RabbitMQ domain events; there is no central orchestrator.
+
+```mermaid
+graph LR
+    User["User / client"]
+    API["API :3000"]
+    PG[("fiap_videos_api")]
+    Redis[("Redis")]
+    Storage["MinIO / S3"]
+    RMQ["RabbitMQ"]
+
+    User --> API
+    API --> PG
+    API --> Redis
+    API --> Storage
+    API -- "VideoProcessingRequested" --> RMQ
+    RMQ -- "Started / Completed / Failed" --> API
+```
+
+### Upload flow
+
+1. Authenticated user uploads via `POST /videos` (single or multi-file).
+2. Videos are stored at `videos/{jobId}-{file}` in object storage.
+3. A `video_jobs` row is created (`pending`) and `VideoProcessingRequested` is written to the **transactional outbox**.
+4. The outbox relay publishes to exchange `fiap-videos.events`.
+5. Processor events (`Started`, `Completed`, `Failed`) update job status via inbox consumers.
+
+### Hexagonal layout
+
+```
+src/
+├── core/
+│   ├── domain/          # Entities, ports, validators (VideoJob, User, …)
+│   └── application/     # Use cases (SubmitVideo, Login, Apply* events, …)
+└── adapter/
+    ├── driver/          # Express controllers & routes (HTTP + web UI)
+    └── infra/           # Drizzle, RabbitMQ, Redis, JWT, S3/MinIO, outbox relay
+```
+
+Wiring: `src/adapter/infra/http/composition-root.ts`.
+
+### Database (`fiap_videos_api`)
+
+| Table | Purpose |
+|-------|---------|
+| `users` | Credentials and roles (`admin` \| `user`) |
+| `video_jobs` | Job lifecycle, storage keys, correlation IDs |
+| `outbox` / `outbox_dead_letters` | Reliable event publishing |
+| `processed_events` | Inbox deduplication |
+
+### Messaging
+
+Exchange: `fiap-videos.events` (topic, durable). DLX: `fiap-videos.events.dlx`. Queue pattern: `fiap-videos.api.{eventType}`.
+
+| Direction | Event |
+|-----------|-------|
+| Publishes (outbox) | `VideoProcessingRequested` |
+| Consumes | `VideoProcessingStarted`, `VideoProcessingCompleted`, `VideoProcessingFailed` |
+
+Failed deliveries route to per-queue DLQs. Every envelope carries a correlation ID.
+
+### Dependencies
+
+| Dependency | Usage |
+|------------|-------|
+| PostgreSQL | Primary persistence |
+| Redis | Video list cache (30s TTL) |
+| RabbitMQ | Event bus |
+| MinIO / S3 | Uploads (`videos/…`), zip downloads (`zips/…`) |
+
 ## User roles
 
 The API has two roles, stored on the user record and embedded in the JWT (`role`: `admin` | `user`).
@@ -256,14 +330,3 @@ yarn test:integration
 ```
 
 GitHub Actions runs `build`, `lint`, `type-check`, `test-unit`, `test-integration`, `security-audit`, and a `ci-success` gate on every push and pull request to `main`.
-
-## Architecture
-
-Hexagonal layout under `src/`:
-
-- `core/domain` — entities, ports, validators
-- `core/application` — use cases
-- `adapter/driver` — controllers, routes
-- `adapter/infra` — Drizzle, RabbitMQ, Redis, JWT, storage
-
-Wiring in `src/adapter/infra/http/composition-root.ts`.
