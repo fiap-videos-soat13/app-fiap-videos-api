@@ -2,13 +2,13 @@
  * Contrato de eventos (cópia local por microsserviço).
  * Fonte canônica no workspace: docs/contracts/VideoEventEnvelopeValidator.ts
  */
-import { z } from 'zod';
+import { z } from "zod";
 
 export const VideoEventType = {
-  VideoProcessingRequested: 'VideoProcessingRequested',
-  VideoProcessingStarted: 'VideoProcessingStarted',
-  VideoProcessingCompleted: 'VideoProcessingCompleted',
-  VideoProcessingFailed: 'VideoProcessingFailed',
+  VideoProcessingRequested: "VideoProcessingRequested",
+  VideoProcessingStarted: "VideoProcessingStarted",
+  VideoProcessingCompleted: "VideoProcessingCompleted",
+  VideoProcessingFailed: "VideoProcessingFailed",
 } as const;
 
 export type VideoEventType =
@@ -65,7 +65,7 @@ export const VideoProcessingFailedPayloadSchema = z.object({
   failedAt: z.iso.datetime(),
 });
 
-export const VideoEventEnvelopeSchema = z.discriminatedUnion('eventType', [
+export const VideoEventEnvelopeSchema = z.discriminatedUnion("eventType", [
   z.object({
     ...baseEnvelopeFields,
     eventType: z.literal(VideoEventType.VideoProcessingRequested),

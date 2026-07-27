@@ -1,4 +1,4 @@
-import { Counter, type Registry } from 'prom-client';
+import { Counter, type Registry } from "prom-client";
 
 export class SagaMetricsService {
   private readonly serviceName: string;
@@ -8,21 +8,21 @@ export class SagaMetricsService {
 
   constructor(private readonly registry: Registry) {
     this.serviceName =
-      process.env.METRICS_SERVICE_NAME?.trim() || 'app-fiap-videos-api';
+      process.env.METRICS_SERVICE_NAME?.trim() || "app-fiap-videos-api";
     this.published = this.getOrCreateCounter(
-      'saga_events_published_total',
-      'Eventos gravados no outbox e publicados',
-      ['service', 'event_type'],
+      "saga_events_published_total",
+      "Eventos gravados no outbox e publicados",
+      ["service", "event_type"],
     );
     this.consumed = this.getOrCreateCounter(
-      'saga_events_consumed_total',
-      'Eventos aplicados pelos handlers (inbox)',
-      ['service', 'event_type', 'consumer'],
+      "saga_events_consumed_total",
+      "Eventos aplicados pelos handlers (inbox)",
+      ["service", "event_type", "consumer"],
     );
     this.duplicateSkipped = this.getOrCreateCounter(
-      'saga_events_duplicate_skipped_total',
-      'Entregas duplicadas ignoradas pelo inbox',
-      ['service', 'consumer'],
+      "saga_events_duplicate_skipped_total",
+      "Entregas duplicadas ignoradas pelo inbox",
+      ["service", "consumer"],
     );
   }
 

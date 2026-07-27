@@ -1,15 +1,15 @@
-import path from 'node:path';
+import path from "node:path";
 import {
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
-} from '@aws-sdk/client-s3';
-import { ObjectStoragePort } from '@domain/outboundPorts/VideoPorts';
+} from "@aws-sdk/client-s3";
+import { ObjectStoragePort } from "@domain/outboundPorts/VideoPorts";
 
 export function resolveS3ZipKey(zipStorageKey: string): string {
-  const normalized = zipStorageKey.replace(/\\/g, '/');
-  if (normalized.startsWith('zips/')) {
+  const normalized = zipStorageKey.replace(/\\/g, "/");
+  if (normalized.startsWith("zips/")) {
     return normalized;
   }
   return `zips/${normalized}`;
@@ -29,14 +29,16 @@ export class S3ObjectStorage extends ObjectStoragePort {
     originalFileName: string,
   ): Promise<string> {
     const safeFileName = path.basename(originalFileName);
-    const storageKey = path.join('videos', `${jobId}-${safeFileName}`).replace(/\\/g, '/');
+    const storageKey = path
+      .join("videos", `${jobId}-${safeFileName}`)
+      .replace(/\\/g, "/");
 
     await this.client.send(
       new PutObjectCommand({
         Bucket: this.bucket,
         Key: storageKey,
         Body: buffer,
-        ContentType: 'application/octet-stream',
+        ContentType: "application/octet-stream",
       }),
     );
 

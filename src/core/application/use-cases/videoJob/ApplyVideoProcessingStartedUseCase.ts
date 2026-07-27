@@ -1,7 +1,7 @@
-import { EntityNotFoundException } from '@domain/exceptions/ValidationException';
-import { VideoJobRepository } from '@domain/repositories/VideoRepositories';
-import { CachePort } from '@domain/services/CoreServices';
-import { LoggerService } from '@domain/services/CoreServices';
+import { EntityNotFoundException } from "@domain/exceptions/ValidationException";
+import { VideoJobRepository } from "@domain/repositories/VideoRepositories";
+import { CachePort } from "@domain/services/CoreServices";
+import { LoggerService } from "@domain/services/CoreServices";
 
 export class ApplyVideoProcessingStartedUseCase {
   constructor(
@@ -10,10 +10,7 @@ export class ApplyVideoProcessingStartedUseCase {
     private readonly logger: LoggerService,
   ) {}
 
-  async execute(input: {
-    videoJobId: string;
-    userId: string;
-  }): Promise<void> {
+  async execute(input: { videoJobId: string; userId: string }): Promise<void> {
     const updated = await this.videoJobs.markProcessing(input.videoJobId);
     if (!updated) {
       throw new EntityNotFoundException(
@@ -21,7 +18,7 @@ export class ApplyVideoProcessingStartedUseCase {
       );
     }
     await this.cache.delete(`videos:list:${input.userId}`);
-    this.logger.log('Status sincronizado: processing', {
+    this.logger.log("Status sincronizado: processing", {
       videoJobId: input.videoJobId,
     });
   }

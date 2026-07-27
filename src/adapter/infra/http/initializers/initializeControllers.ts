@@ -1,11 +1,11 @@
-import { AuthController } from '@adapter/driver/controllers/AuthController';
-import { VideoController } from '@adapter/driver/controllers/VideoController';
-import { AuthMiddleware } from '../middleware/auth.middleware';
+import { AuthController } from "@adapter/driver/controllers/AuthController";
+import { VideoController } from "@adapter/driver/controllers/VideoController";
+import { AuthMiddleware } from "../middleware/auth.middleware";
 import type {
   ControllerContext,
   InfrastructureContext,
   UseCaseContext,
-} from './types';
+} from "./types";
 
 export function initializeControllers(
   useCases: UseCaseContext,
@@ -14,7 +14,10 @@ export function initializeControllers(
   const auth = AuthMiddleware.initialize(infra.tokens);
 
   return {
-    authController: new AuthController(useCases.registerUser, useCases.loginUser),
+    authController: new AuthController(
+      useCases.registerUser,
+      useCases.loginUser,
+    ),
     videoController: new VideoController(
       useCases.submitVideo,
       useCases.listVideos,

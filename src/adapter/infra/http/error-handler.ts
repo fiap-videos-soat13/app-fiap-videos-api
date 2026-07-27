@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from "express";
 import {
   ValidationException,
   BusinessRuleException,
@@ -6,7 +6,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
   ConflictException,
-} from '@domain/exceptions/ValidationException';
+} from "@domain/exceptions/ValidationException";
 
 interface ErrorBody {
   statusCode: number;
@@ -34,21 +34,21 @@ export function errorHandler(
       context: err.context,
     };
   } else if (err instanceof UnauthorizedException) {
-    body = { statusCode: 401, message: err.message, error: 'UNAUTHORIZED' };
+    body = { statusCode: 401, message: err.message, error: "UNAUTHORIZED" };
   } else if (err instanceof ForbiddenException) {
-    body = { statusCode: 403, message: err.message, error: 'FORBIDDEN' };
+    body = { statusCode: 403, message: err.message, error: "FORBIDDEN" };
   } else if (err instanceof EntityNotFoundException) {
-    body = { statusCode: 404, message: err.message, error: 'NOT_FOUND' };
+    body = { statusCode: 404, message: err.message, error: "NOT_FOUND" };
   } else if (err instanceof ConflictException) {
-    body = { statusCode: 409, message: err.message, error: 'CONFLICT' };
+    body = { statusCode: 409, message: err.message, error: "CONFLICT" };
   } else if (err instanceof BusinessRuleException) {
-    body = { statusCode: 400, message: err.message, error: 'BUSINESS_RULE' };
+    body = { statusCode: 400, message: err.message, error: "BUSINESS_RULE" };
   } else {
-    console.error('Unhandled error:', err);
+    console.error("Unhandled error:", err);
     body = {
       statusCode: 500,
-      message: 'Erro interno do servidor',
-      error: 'INTERNAL_ERROR',
+      message: "Erro interno do servidor",
+      error: "INTERNAL_ERROR",
     };
   }
 

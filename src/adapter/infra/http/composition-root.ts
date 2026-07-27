@@ -1,15 +1,15 @@
-import { initializeInfrastructure } from './initializers/initializeInfrastructure';
-import { initializeRepositories } from './initializers/initializeRepositories';
-import { initializeUseCases } from './initializers/initializeUseCases';
-import { initializeMessaging } from './initializers/initializeMessaging';
-import { initializeControllers } from './initializers/initializeControllers';
-import { initializeExpress } from './initializers/initializeExpress';
-import { initializeInternalRoutes } from './initializers/initializeInternalRoutes';
-import { initializeDomainRoutes } from './initializers/initializeDomainRoutes';
-import { startOutboxRelay } from './workers/startOutboxRelay';
-import type { AppContext } from './initializers/types';
+import { initializeInfrastructure } from "./initializers/initializeInfrastructure";
+import { initializeRepositories } from "./initializers/initializeRepositories";
+import { initializeUseCases } from "./initializers/initializeUseCases";
+import { initializeMessaging } from "./initializers/initializeMessaging";
+import { initializeControllers } from "./initializers/initializeControllers";
+import { initializeExpress } from "./initializers/initializeExpress";
+import { initializeInternalRoutes } from "./initializers/initializeInternalRoutes";
+import { initializeDomainRoutes } from "./initializers/initializeDomainRoutes";
+import { startOutboxRelay } from "./workers/startOutboxRelay";
+import type { AppContext } from "./initializers/types";
 
-export type { AppContext } from './initializers/types';
+export type { AppContext } from "./initializers/types";
 
 export function buildApp(): AppContext {
   const infra = initializeInfrastructure();

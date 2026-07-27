@@ -1,4 +1,4 @@
-import type { OutboxRelayWorker } from '@adapter/infra/messaging/outbox/OutboxRelayWorker';
+import type { OutboxRelayWorker } from "@adapter/infra/messaging/outbox/OutboxRelayWorker";
 
 export function startOutboxRelay(outboxRelay: OutboxRelayWorker): void {
   const outboxRelayIntervalMs =

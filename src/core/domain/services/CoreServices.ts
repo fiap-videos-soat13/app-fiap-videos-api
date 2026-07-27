@@ -1,4 +1,4 @@
-export { LoggerPort as LoggerService } from '@domain/outboundPorts/LoggerPort';
+export { LoggerPort as LoggerService } from "@domain/outboundPorts/LoggerPort";
 
 export abstract class ObservabilityMetricsService {
   abstract recordVideoSubmitted(): void;

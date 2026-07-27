@@ -1,24 +1,21 @@
-import path from 'node:path';
-import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { Pool } from 'pg';
-import * as schema from './schema';
+import path from "node:path";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { Pool } from "pg";
+import * as schema from "./schema";
 
 let pool: Pool | null = null;
 let db: NodePgDatabase<typeof schema> | null = null;
 
 export type AppDatabase = NodePgDatabase<typeof schema>;
 
-const MIGRATIONS_FOLDER = path.join(
-  __dirname,
-  'migrations',
-);
+const MIGRATIONS_FOLDER = path.join(__dirname, "migrations");
 
 export function getPool(): Pool {
   if (!pool) {
     const url = process.env.DATABASE_URL?.trim();
     if (!url) {
-      throw new Error('DATABASE_URL is required');
+      throw new Error("DATABASE_URL is required");
     }
     pool = createPool(url);
   }
@@ -39,7 +36,7 @@ export function getDb(): AppDatabase {
     db = drizzle({
       client: getPool(),
       schema,
-      casing: 'snake_case',
+      casing: "snake_case",
     });
   }
   return db;

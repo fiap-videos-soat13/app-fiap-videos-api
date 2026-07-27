@@ -1,20 +1,20 @@
-import type { Request, Response } from 'express';
-import { RegisterUserUseCase } from '@use-cases/auth/RegisterUserUseCase';
-import { LoginUserUseCase } from '@use-cases/auth/LoginUserUseCase';
-import { AuthMiddleware } from '@adapter/infra/http/middleware/auth.middleware';
-import { UnauthorizedException } from '@domain/exceptions/ValidationException';
+import type { Request, Response } from "express";
+import { RegisterUserUseCase } from "@use-cases/auth/RegisterUserUseCase";
+import { LoginUserUseCase } from "@use-cases/auth/LoginUserUseCase";
+import { AuthMiddleware } from "@adapter/infra/http/middleware/auth.middleware";
+import { UnauthorizedException } from "@domain/exceptions/ValidationException";
 
 function readFormField(body: unknown, key: string): string {
-  if (typeof body !== 'object' || body === null || !(key in body)) {
-    return '';
+  if (typeof body !== "object" || body === null || !(key in body)) {
+    return "";
   }
   const value = (body as Record<string, unknown>)[key];
-  return typeof value === 'string' ? value : '';
+  return typeof value === "string" ? value : "";
 }
 
 function readRedirect(body: unknown): string {
-  const redirect = readFormField(body, 'redirect');
-  return redirect.startsWith('/') ? redirect : '/status';
+  const redirect = readFormField(body, "redirect");
+  return redirect.startsWith("/") ? redirect : "/status";
 }
 
 export class AuthController {
@@ -42,16 +42,16 @@ export class AuthController {
     const redirect = readRedirect(req.body);
     try {
       const result = await this.loginUser.execute({
-        email: readFormField(req.body, 'email'),
-        password: readFormField(req.body, 'password'),
+        email: readFormField(req.body, "email"),
+        password: readFormField(req.body, "password"),
       });
       AuthMiddleware.setAuthCookie(res, result.accessToken);
       res.redirect(redirect);
     } catch (err) {
       const message =
         err instanceof UnauthorizedException
-          ? 'Credenciais inválidas'
-          : 'Erro ao fazer login';
+          ? "Credenciais inválidas"
+          : "Erro ao fazer login";
       res.redirect(
         `/login?error=${encodeURIComponent(message)}&redirect=${encodeURIComponent(redirect)}`,
       );
@@ -60,6 +60,6 @@ export class AuthController {
 
   logoutWeb = (_req: Request, res: Response): void => {
     AuthMiddleware.clearAuthCookie(res);
-    res.redirect('/login');
+    res.redirect("/login");
   };
 }

@@ -1,6 +1,6 @@
-import { z } from 'zod';
-import { UserRole } from '@domain/enums/UserRole';
-import { strongPasswordSchema } from '@validators/PasswordPolicy';
+import { z } from "zod";
+import { UserRole } from "@domain/enums/UserRole";
+import { strongPasswordSchema } from "@validators/PasswordPolicy";
 
 export const RegisterUserSchema = z.object({
   email: z.email(),

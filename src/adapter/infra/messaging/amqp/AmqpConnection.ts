@@ -1,7 +1,7 @@
-import * as amqp from 'amqplib';
-import type { ConfirmChannel, ChannelModel } from 'amqplib';
-import { assertVideoTopology } from './AmqpTopology';
-import type { LoggerPort } from '@domain/outboundPorts/LoggerPort';
+import * as amqp from "amqplib";
+import type { ConfirmChannel, ChannelModel } from "amqplib";
+import { assertVideoTopology } from "./AmqpTopology";
+import type { LoggerPort } from "@domain/outboundPorts/LoggerPort";
 
 export class AmqpConnection {
   private model: ChannelModel | null = null;
@@ -58,17 +58,17 @@ export class AmqpConnection {
 
   async createConsumerChannel(): Promise<amqp.Channel> {
     if (!this.model) {
-      throw new Error('AmqpConnection not initialized');
+      throw new Error("AmqpConnection not initialized");
     }
     return this.model.createChannel();
   }
 
   private async openConfirmChannel(): Promise<ConfirmChannel> {
     if (!this.model) {
-      throw new Error('AmqpConnection not initialized');
+      throw new Error("AmqpConnection not initialized");
     }
     const ch = await this.model.createConfirmChannel();
-    ch.on('close', () => {
+    ch.on("close", () => {
       if (this.confirmChannel === ch) {
         this.confirmChannel = null;
         this.confirmChannelPromise = null;
@@ -84,9 +84,9 @@ function resolveRabbitUrl(): string {
   if (explicit) {
     return explicit;
   }
-  throw new Error('RABBITMQ_URL must be configured');
+  throw new Error("RABBITMQ_URL must be configured");
 }
 
 function redact(url: string): string {
-  return url.replace(/:\/\/([^:]+):[^@]+@/, '://$1:***@');
+  return url.replace(/:\/\/([^:]+):[^@]+@/, "://$1:***@");
 }

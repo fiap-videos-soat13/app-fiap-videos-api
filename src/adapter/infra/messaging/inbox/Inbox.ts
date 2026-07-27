@@ -1,9 +1,9 @@
-import { eq } from 'drizzle-orm';
-import { getDb } from '@adapter/infra/database/client';
-import { processedEvents } from '@adapter/infra/database/schema';
-import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
-import type { LoggerPort } from '@domain/outboundPorts/LoggerPort';
-import type { SagaMetricsService } from '@adapter/infra/observability/SagaMetricsService';
+import { eq } from "drizzle-orm";
+import { getDb } from "@adapter/infra/database/client";
+import { processedEvents } from "@adapter/infra/database/schema";
+import type { VideoEventEnvelope } from "@validators/VideoEventEnvelopeValidator";
+import type { LoggerPort } from "@domain/outboundPorts/LoggerPort";
+import type { SagaMetricsService } from "@adapter/infra/observability/SagaMetricsService";
 
 export class Inbox {
   constructor(
@@ -33,7 +33,7 @@ export class Inbox {
       .returning();
 
     if (inserted.length === 0) {
-      this.logger.log('Inbox dedup', {
+      this.logger.log("Inbox dedup", {
         eventId: envelope.eventId,
         consumerName,
       });
