@@ -10,7 +10,7 @@ services:
     image: postgres:16-alpine
     container_name: fiap-videos-api-pg
     ports:
-      - '5433:5432'
+      - '5432:5432'
     environment:
       POSTGRES_USER: fiap
       POSTGRES_PASSWORD: fiap
@@ -39,6 +39,20 @@ services:
     networks:
       - api-network
 
+  minio:
+    extends:
+      file: ../app-fiap-videos-infra/docker/minio-compose.yml
+      service: minio
+    networks:
+      - api-network
+
+  minio-init:
+    extends:
+      file: ../app-fiap-videos-infra/docker/minio-compose.yml
+      service: minio-init
+    networks:
+      - api-network
+
   api:
     build:
       context: .
@@ -57,12 +71,15 @@ services:
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://fiap:fiap@host.docker.internal:5673/
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
-      STORAGE_PATH: /app/storage
+      STORAGE_BACKEND: minio
+      S3_BUCKET: fiap-videos
+      S3_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_REGION: us-east-1
       VIDEO_EVENTS_EXCHANGE: fiap-videos.events
       VIDEO_EVENTS_DLX: fiap-videos.events.dlx
       RABBITMQ_CONNECTION_NAME: api
-    volumes:
-      - video_storage:/app/storage
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
@@ -70,6 +87,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [
@@ -89,7 +108,7 @@ services:
 
 volumes:
   pgdata:
-  video_storage:
+  minio_data:
 
 networks:
   api-network:

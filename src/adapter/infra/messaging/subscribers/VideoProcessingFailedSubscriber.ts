@@ -1,14 +1,14 @@
 import {
   VideoProcessingFailedPayloadSchema,
   type VideoEventEnvelope,
-} from '@validators/VideoEventEnvelopeValidator';
-import { AmqpConnection } from '../amqp/AmqpConnection';
-import { Inbox } from '../inbox/Inbox';
-import { BaseEventSubscriber } from './BaseEventSubscriber';
-import { SubscribersConfig } from './subscribersConfig';
-import { ApplyVideoProcessingFailedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingFailedUseCase';
-import { ConsoleLoggerService } from '@adapter/infra/services/ConsoleLoggerService';
-import type { z } from 'zod';
+} from "@validators/VideoEventEnvelopeValidator";
+import { AmqpConnection } from "../amqp/AmqpConnection";
+import { Inbox } from "../inbox/Inbox";
+import { BaseEventSubscriber } from "./BaseEventSubscriber";
+import { SubscribersConfig } from "./subscribersConfig";
+import { ApplyVideoProcessingFailedUseCase } from "@use-cases/videoJob/ApplyVideoProcessingFailedUseCase";
+import type { LoggerPort } from "@domain/outboundPorts/LoggerPort";
+import type { z } from "zod";
 
 type FailedPayload = z.infer<typeof VideoProcessingFailedPayloadSchema>;
 
@@ -16,7 +16,7 @@ export class VideoProcessingFailedSubscriber extends BaseEventSubscriber<FailedP
   constructor(
     connection: AmqpConnection,
     inbox: Inbox,
-    logger: ConsoleLoggerService,
+    logger: LoggerPort,
     private readonly applyFailed: ApplyVideoProcessingFailedUseCase,
   ) {
     super(connection, inbox, logger, {
@@ -25,10 +25,7 @@ export class VideoProcessingFailedSubscriber extends BaseEventSubscriber<FailedP
       eventType: SubscribersConfig.VideoProcessingFailed.eventType,
       parsePayload: (payload) =>
         VideoProcessingFailedPayloadSchema.parse(payload),
-      onEvent: async (
-        envelope: VideoEventEnvelope,
-        payload: FailedPayload,
-      ) => {
+      onEvent: async (envelope: VideoEventEnvelope, payload: FailedPayload) => {
         await applyFailed.execute({
           videoJobId: envelope.videoJobId,
           userId: payload.userId,

@@ -22,5 +22,11 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-argument': 'error',
     },
   },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
   eslintConfigPrettier,
 );

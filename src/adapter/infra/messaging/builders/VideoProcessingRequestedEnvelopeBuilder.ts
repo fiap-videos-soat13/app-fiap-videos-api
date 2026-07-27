@@ -1,11 +1,11 @@
-import { randomUUID } from 'node:crypto';
-import type { VideoJob } from '@domain/entities/VideoJob';
-import { VideoProcessingRequestedEventPort } from '@domain/outboundPorts/VideoPorts';
+import { randomUUID } from "node:crypto";
+import type { VideoJob } from "@domain/entities/VideoJob";
+import { VideoProcessingRequestedEventPort } from "@domain/outboundPorts/VideoPorts";
 import {
   VideoEventType,
   SCHEMA_VERSION,
   type VideoEventEnvelope,
-} from '@validators/VideoEventEnvelopeValidator';
+} from "@validators/VideoEventEnvelopeValidator";
 
 export class VideoProcessingRequestedEnvelopeBuilder extends VideoProcessingRequestedEventPort {
   buildEnvelope(job: VideoJob, userEmail: string): VideoEventEnvelope {

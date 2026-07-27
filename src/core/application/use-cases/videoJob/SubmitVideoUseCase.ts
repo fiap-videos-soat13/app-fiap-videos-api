@@ -1,20 +1,20 @@
-import { EntityNotFoundException } from '@domain/exceptions/ValidationException';
+import { EntityNotFoundException } from "@domain/exceptions/ValidationException";
 import {
   ObjectStoragePort,
   VideoProcessingRequestedEventPort,
-} from '@domain/outboundPorts/VideoPorts';
+} from "@domain/outboundPorts/VideoPorts";
 import {
   UserRepository,
   VideoJobRepository,
-} from '@domain/repositories/VideoRepositories';
+} from "@domain/repositories/VideoRepositories";
 import {
   LoggerService,
   ObservabilityMetricsService,
-} from '@domain/services/CoreServices';
-import { ValidationService } from '@application/services/ValidationService';
-import { VideoUploadInputSchema } from '@validators/VideoUploadValidator';
-import { randomUUID } from 'node:crypto';
-import type { VideoJob } from '@domain/entities/VideoJob';
+} from "@domain/services/CoreServices";
+import { ValidationService } from "@application/services/ValidationService";
+import { VideoUploadInputSchema } from "@validators/VideoUploadValidator";
+import { randomUUID } from "node:crypto";
+import type { VideoJob } from "@domain/entities/VideoJob";
 
 export type SubmitVideoInput = {
   userId: string;
@@ -42,12 +42,12 @@ export class SubmitVideoUseCase {
         fileSizeBytes: input.fileBuffer.length,
         mimeType: input.mimeType,
       },
-      'SubmitVideo',
+      "SubmitVideo",
     );
 
     const user = await this.users.findById(input.userId);
     if (!user) {
-      throw new EntityNotFoundException('Usuário não encontrado');
+      throw new EntityNotFoundException("Usuário não encontrado");
     }
 
     const jobId = randomUUID();
@@ -72,7 +72,7 @@ export class SubmitVideoUseCase {
     );
 
     this.metrics.recordVideoSubmitted();
-    this.logger.log('Vídeo enviado para processamento', {
+    this.logger.log("Vídeo enviado para processamento", {
       videoJobId: job.id,
       userId: user.id,
     });

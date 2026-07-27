@@ -1,14 +1,14 @@
 import {
   VideoProcessingCompletedPayloadSchema,
   type VideoEventEnvelope,
-} from '@validators/VideoEventEnvelopeValidator';
-import { AmqpConnection } from '../amqp/AmqpConnection';
-import { Inbox } from '../inbox/Inbox';
-import { BaseEventSubscriber } from './BaseEventSubscriber';
-import { SubscribersConfig } from './subscribersConfig';
-import { ApplyVideoProcessingCompletedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingCompletedUseCase';
-import { ConsoleLoggerService } from '@adapter/infra/services/ConsoleLoggerService';
-import type { z } from 'zod';
+} from "@validators/VideoEventEnvelopeValidator";
+import { AmqpConnection } from "../amqp/AmqpConnection";
+import { Inbox } from "../inbox/Inbox";
+import { BaseEventSubscriber } from "./BaseEventSubscriber";
+import { SubscribersConfig } from "./subscribersConfig";
+import { ApplyVideoProcessingCompletedUseCase } from "@use-cases/videoJob/ApplyVideoProcessingCompletedUseCase";
+import type { LoggerPort } from "@domain/outboundPorts/LoggerPort";
+import type { z } from "zod";
 
 type CompletedPayload = z.infer<typeof VideoProcessingCompletedPayloadSchema>;
 
@@ -16,7 +16,7 @@ export class VideoProcessingCompletedSubscriber extends BaseEventSubscriber<Comp
   constructor(
     connection: AmqpConnection,
     inbox: Inbox,
-    logger: ConsoleLoggerService,
+    logger: LoggerPort,
     private readonly applyCompleted: ApplyVideoProcessingCompletedUseCase,
   ) {
     super(connection, inbox, logger, {

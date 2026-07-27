@@ -1,6 +1,6 @@
-import { VideoJob } from '@domain/entities/VideoJob';
-import type { VideoJobStatus } from '@domain/enums/VideoJobStatus';
-import type { videoJobs } from '@adapter/infra/database/schema/videoJobs';
+import { VideoJob } from "@domain/entities/VideoJob";
+import type { VideoJobStatus } from "@domain/enums/VideoJobStatus";
+import type { videoJobs } from "@adapter/infra/database/schema/videoJobs";
 
 type DbVideoJob = typeof videoJobs.$inferSelect;
 

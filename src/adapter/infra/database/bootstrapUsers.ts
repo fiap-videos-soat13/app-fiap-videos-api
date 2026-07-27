@@ -1,8 +1,8 @@
-import { eq } from 'drizzle-orm';
-import { BcryptPasswordHasher } from '@adapter/infra/auth/AuthAdapters';
-import { UserRole } from '@domain/enums/UserRole';
-import { type AppDatabase } from './client';
-import { users } from './schema';
+import { eq } from "drizzle-orm";
+import { BcryptPasswordHasher } from "@adapter/infra/auth/AuthAdapters";
+import { UserRole } from "@domain/enums/UserRole";
+import { type AppDatabase } from "./client";
+import { users } from "./schema";
 
 export type BootstrapUsersOptions = {
   includeDemoUser?: boolean;
@@ -23,28 +23,28 @@ type SeedEntry = {
 function resolveAdminCredentials(): SeedEntry {
   const email = process.env.SEED_ADMIN_EMAIL?.trim();
   const password = process.env.SEED_ADMIN_PASSWORD?.trim();
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === "production";
 
   if (isProduction) {
     if (!email || !password) {
       throw new Error(
-        'SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are required when BOOTSTRAP_USERS=true in production',
+        "SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD are required when BOOTSTRAP_USERS=true in production",
       );
     }
     return { email, password, role: UserRole.Admin };
   }
 
   return {
-    email: email || 'admin@fiap-videos.local',
-    password: password || 'Admin12345',
+    email: email || "admin@fiap-videos.local",
+    password: password || "Admin12345",
     role: UserRole.Admin,
   };
 }
 
 function resolveDemoCredentials(): SeedEntry {
   return {
-    email: process.env.SEED_USER_EMAIL?.trim() || 'demo@fiap-videos.local',
-    password: process.env.SEED_USER_PASSWORD?.trim() || 'Demo12345',
+    email: process.env.SEED_USER_EMAIL?.trim() || "demo@fiap-videos.local",
+    password: process.env.SEED_USER_PASSWORD?.trim() || "Demo12345",
     role: UserRole.User,
   };
 }
@@ -61,7 +61,7 @@ export async function bootstrapUsers(
   }
 
   const results: BootstrapUserResult[] = [];
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === "production";
 
   for (const entry of entries) {
     const [existing] = await db

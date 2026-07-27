@@ -1,13 +1,13 @@
-import { ConflictException } from '@domain/exceptions/ValidationException';
-import { UserRepository } from '@domain/repositories/VideoRepositories';
-import { PasswordHasher } from '@domain/services/CoreServices';
-import { ValidationService } from '@application/services/ValidationService';
-import { UserRole } from '@domain/enums/UserRole';
+import { ConflictException } from "@domain/exceptions/ValidationException";
+import { UserRepository } from "@domain/repositories/VideoRepositories";
+import { PasswordHasher } from "@domain/services/CoreServices";
+import { ValidationService } from "@application/services/ValidationService";
+import { UserRole } from "@domain/enums/UserRole";
 import {
   RegisterUserSchema,
   type RegisterUserValidationType,
-} from '@validators/AuthValidator';
-import type { User } from '@domain/entities/User';
+} from "@validators/AuthValidator";
+import type { User } from "@domain/entities/User";
 
 export class RegisterUserUseCase {
   constructor(
@@ -20,12 +20,12 @@ export class RegisterUserUseCase {
     const data = this.validation.validate(
       RegisterUserSchema,
       input,
-      'RegisterUser',
+      "RegisterUser",
     );
 
     const existing = await this.users.findByEmail(data.email);
     if (existing) {
-      throw new ConflictException('E-mail já cadastrado');
+      throw new ConflictException("E-mail já cadastrado");
     }
 
     const passwordHash = await this.passwordHasher.hash(data.password);

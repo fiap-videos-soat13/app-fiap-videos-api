@@ -10,6 +10,56 @@ HTTP edge service (Express): authentication, video upload, status listing, and z
 - Consume processor events to update job status
 - Cache user video lists in Redis (30s TTL)
 
+## User roles
+
+The API has two roles, stored on the user record and embedded in the JWT (`role`: `admin` | `user`).
+
+| Role | Value in JWT | Purpose |
+|------|--------------|---------|
+| **Admin** | `admin` | Bootstrap and onboard users |
+| **User** | `user` | Normal video upload and status workflow |
+
+### What each role can do
+
+| Action | Admin | User |
+|--------|-------|------|
+| `POST /auth/login`, `/auth/login/web` | ✅ | ✅ |
+| `POST /auth/register` | ✅ | ❌ (403) |
+| Create another admin via register (`role: "admin"`) | ✅ | ❌ |
+| `POST /videos` (upload) | ✅ | ✅ |
+| `GET /videos`, `GET /videos/:id` | ✅ (own jobs only) | ✅ (own jobs only) |
+| `GET /videos/:id/download` | ✅ (own jobs only) | ✅ (own jobs only) |
+| Web UI (`/login`, `/status`) | ✅ | ✅ |
+
+Video endpoints always scope data to the authenticated user (`sub` in the JWT). Admins do **not** get access to other users’ jobs.
+
+### Registering users (admin only)
+
+```http
+POST /auth/register
+Authorization: Bearer <admin_access_token>
+Content-Type: application/json
+
+{
+  "email": "newuser@fiap-videos.local",
+  "password": "SecurePass123",
+  "role": "user"
+}
+```
+
+`role` is optional and defaults to `user`. Set `"role": "admin"` only when creating another administrator.
+
+### Local seed users
+
+After `yarn db:seed` or `BOOTSTRAP_USERS=true`:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@fiap-videos.local` | `Admin12345` |
+| User | `demo@fiap-videos.local` | `Demo12345` |
+
+Values come from `SEED_*` / `SEED_ADMIN_*` in `.env` (see `.env.example`).
+
 ## Development server (`yarn start:dev`)
 
 Use this when you want **hot reload** while coding. The Node process runs on your machine; databases and messaging run in Docker.
@@ -49,7 +99,7 @@ docker compose ps
 
 | Dependency | Host port | Used by API |
 |------------|-----------|-------------|
-| PostgreSQL | `5433` | `DATABASE_URL` |
+| PostgreSQL | `5432` | `DATABASE_URL` |
 | Redis | `6380` | `REDIS_URL` |
 | RabbitMQ | `5673` (UI: `15673`) | `RABBITMQ_URL` — **single shared broker** (infra) |
 
@@ -78,13 +128,6 @@ Alternatively, set `BOOTSTRAP_USERS=true` in `.env` before `yarn start` or Docke
 
 Migrations run automatically on `yarn start` / Docker startup too, but running them once before dev avoids race conditions.
 
-**Seed credentials** (from `.env.example`):
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | `admin@fiap-videos.local` | `Admin12345` |
-| User | `demo@fiap-videos.local` | `Demo12345` |
-
 ### Step 4 — Start the dev server
 
 ```bash
@@ -110,14 +153,15 @@ Status em http://0.0.0.0:3000/status
 
 Uploads only complete if the **processor** and **notifier** are also running.
 
-In separate terminals, with the **same** RabbitMQ broker (`localhost:5673`):
+In separate terminals, with the **same** RabbitMQ broker (`localhost:5673`) and **MinIO** (`localhost:9000`):
 
 ```bash
+# Start MinIO if not already running:
+cd app-fiap-videos-infra/docker && docker compose up minio minio-init -d
+
 # Terminal 2 — processor
 cd app-fiap-videos-processor
 cp .env.example .env
-# Point storage at the API folder so both services share uploaded videos:
-# STORAGE_PATH=../app-fiap-videos-api/storage
 yarn install && yarn db:migrate && yarn start:dev
 
 # Terminal 3 — notifier
@@ -157,7 +201,7 @@ docker compose up --build
 docker compose up --build
 ```
 
-Starts API + Postgres (`:5433`) + Redis (`:6380`). Requires shared RabbitMQ from infra (`docker compose up rabbitmq -d` in `app-fiap-videos-infra/docker`).
+Starts API + Postgres (`:5432`) + Redis (`:6380`). Requires shared RabbitMQ from infra (`docker compose up rabbitmq -d` in `app-fiap-videos-infra/docker`).
 
 ## Endpoints
 
@@ -189,12 +233,29 @@ See [`.env.example`](./.env.example). Required: `DATABASE_URL`, `REDIS_URL`, `RA
 
 ```bash
 yarn lint:ci
+yarn format:check
 yarn typecheck
 yarn test:unit
+yarn test:cov
+yarn test:integration       # requires Postgres (see script below)
 yarn build
 ```
 
-GitHub Actions runs the same checks on push/PR to `main`.
+Run integration tests with a temporary Postgres container:
+
+```bash
+./scripts/run-integration-tests.sh
+```
+
+Or with your own database:
+
+```bash
+export DATABASE_URL=postgresql://fiap:fiap@localhost:5432/fiap_videos_api_test
+yarn db:migrate
+yarn test:integration
+```
+
+GitHub Actions runs `build`, `lint`, `type-check`, `test-unit`, `test-integration`, `security-audit`, and a `ci-success` gate on every push and pull request to `main`.
 
 ## Architecture
 

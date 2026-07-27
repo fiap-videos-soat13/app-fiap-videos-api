@@ -1,4 +1,4 @@
-import type { VideoJobStatus } from '@domain/enums/VideoJobStatus';
+import type { VideoJobStatus } from "@domain/enums/VideoJobStatus";
 
 export class VideoJob {
   constructor(
