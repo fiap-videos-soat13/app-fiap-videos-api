@@ -329,4 +329,6 @@ yarn db:migrate
 yarn test:integration
 ```
 
+> See [app-fiap-videos-infra/README-database.md](../app-fiap-videos-infra/README-database.md) for PostgreSQL layout and ports.
+
 GitHub Actions runs `build`, `lint`, `type-check`, `test-unit`, `test-integration`, `security-audit`, and a `ci-success` gate on every push and pull request to `main`.
