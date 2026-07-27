@@ -1,11 +1,11 @@
-import type { Channel, ConsumeMessage } from 'amqplib';
+import type { Channel, ConsumeMessage } from "amqplib";
 import {
   parseEnvelope,
   type VideoEventEnvelope,
-} from '@validators/VideoEventEnvelopeValidator';
-import { AmqpConnection } from '../amqp/AmqpConnection';
-import { Inbox } from '../inbox/Inbox';
-import type { LoggerPort } from '@domain/outboundPorts/LoggerPort';
+} from "@validators/VideoEventEnvelopeValidator";
+import { AmqpConnection } from "../amqp/AmqpConnection";
+import { Inbox } from "../inbox/Inbox";
+import type { LoggerPort } from "@domain/outboundPorts/LoggerPort";
 
 export type EventHandler<TPayload> = (
   envelope: VideoEventEnvelope,
@@ -70,8 +70,8 @@ export class BaseEventSubscriber<TPayload> {
     await ch.assertQueue(this.config.queueName, {
       durable: true,
       arguments: {
-        'x-dead-letter-exchange': dlx,
-        'x-dead-letter-routing-key': this.config.queueName,
+        "x-dead-letter-exchange": dlx,
+        "x-dead-letter-routing-key": this.config.queueName,
       },
     });
     await ch.bindQueue(this.config.queueName, exchange, this.config.eventType);
@@ -97,7 +97,7 @@ export class BaseEventSubscriber<TPayload> {
   private async handle(ch: Channel, msg: ConsumeMessage): Promise<void> {
     let envelope: VideoEventEnvelope;
     try {
-      const raw: unknown = JSON.parse(msg.content.toString('utf8'));
+      const raw: unknown = JSON.parse(msg.content.toString("utf8"));
       envelope = parseEnvelope(raw);
     } catch (err) {
       this.logger.error(
@@ -123,7 +123,7 @@ export class BaseEventSubscriber<TPayload> {
       );
 
       if (!applied) {
-        this.logger.log('Evento duplicado — ack sem reprocessar', {
+        this.logger.log("Evento duplicado — ack sem reprocessar", {
           eventId: envelope.eventId,
         });
       }

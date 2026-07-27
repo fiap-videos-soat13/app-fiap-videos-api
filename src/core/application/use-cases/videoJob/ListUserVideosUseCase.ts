@@ -1,8 +1,8 @@
-import { VideoJobRepository } from '@domain/repositories/VideoRepositories';
-import { CachePort } from '@domain/services/CoreServices';
-import type { VideoJob } from '@domain/entities/VideoJob';
-import { VideoJobDbAssembler } from '@adapter/infra/repository/assemblers/VideoJobDbAssembler';
-import type { videoJobs } from '@adapter/infra/database/schema/videoJobs';
+import { VideoJobRepository } from "@domain/repositories/VideoRepositories";
+import { CachePort } from "@domain/services/CoreServices";
+import type { VideoJob } from "@domain/entities/VideoJob";
+import { VideoJobDbAssembler } from "@adapter/infra/repository/assemblers/VideoJobDbAssembler";
+import type { videoJobs } from "@adapter/infra/database/schema/videoJobs";
 
 const CACHE_TTL_SECONDS = 30;
 

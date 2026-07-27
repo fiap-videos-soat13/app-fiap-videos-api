@@ -1,5 +1,5 @@
-import { ObservabilityMetricsService } from '@domain/services/CoreServices';
-import { Counter, Registry, collectDefaultMetrics } from 'prom-client';
+import { ObservabilityMetricsService } from "@domain/services/CoreServices";
+import { Counter, Registry, collectDefaultMetrics } from "prom-client";
 
 export class PrometheusMetricsService extends ObservabilityMetricsService {
   private readonly videosSubmitted: Counter;
@@ -8,14 +8,14 @@ export class PrometheusMetricsService extends ObservabilityMetricsService {
   constructor(private readonly registry: Registry) {
     super();
     this.videosSubmitted = new Counter({
-      name: 'fiap_videos_submitted_total',
-      help: 'Total de vídeos enviados para processamento',
+      name: "fiap_videos_submitted_total",
+      help: "Total de vídeos enviados para processamento",
       registers: [registry],
     });
     this.authLogins = new Counter({
-      name: 'fiap_videos_auth_login_total',
-      help: 'Tentativas de login',
-      labelNames: ['success'],
+      name: "fiap_videos_auth_login_total",
+      help: "Tentativas de login",
+      labelNames: ["success"],
       registers: [registry],
     });
     collectDefaultMetrics({ register: registry });
@@ -26,7 +26,7 @@ export class PrometheusMetricsService extends ObservabilityMetricsService {
   }
 
   recordAuthLogin(success: boolean): void {
-    this.authLogins.inc({ success: success ? 'true' : 'false' });
+    this.authLogins.inc({ success: success ? "true" : "false" });
   }
 
   getRegistry(): Registry {

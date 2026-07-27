@@ -1,8 +1,8 @@
 export const VideoJobStatus = {
-  Pending: 'pending',
-  Processing: 'processing',
-  Completed: 'completed',
-  Failed: 'failed',
+  Pending: "pending",
+  Processing: "processing",
+  Completed: "completed",
+  Failed: "failed",
 } as const;
 
 export type VideoJobStatus =

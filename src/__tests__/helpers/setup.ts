@@ -1,4 +1,4 @@
-import { setupTestDatabase, clearTables, closeTestDatabase } from './database';
+import { setupTestDatabase, clearTables, closeTestDatabase } from "./database";
 
 beforeAll(async () => {
   await setupTestDatabase();

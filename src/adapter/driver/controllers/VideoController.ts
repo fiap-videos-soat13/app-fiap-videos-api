@@ -1,10 +1,10 @@
-import type { Response } from 'express';
-import type { AuthenticatedRequest } from '@adapter/infra/http/middleware/correlation.middleware';
-import { SubmitVideoUseCase } from '@use-cases/videoJob/SubmitVideoUseCase';
-import { ListUserVideosUseCase } from '@use-cases/videoJob/ListUserVideosUseCase';
-import { GetVideoJobUseCase } from '@use-cases/videoJob/GetVideoJobUseCase';
-import { DownloadVideoZipUseCase } from '@use-cases/videoJob/DownloadVideoZipUseCase';
-import { UnauthorizedException } from '@domain/exceptions/ValidationException';
+import type { Response } from "express";
+import type { AuthenticatedRequest } from "@adapter/infra/http/middleware/correlation.middleware";
+import { SubmitVideoUseCase } from "@use-cases/videoJob/SubmitVideoUseCase";
+import { ListUserVideosUseCase } from "@use-cases/videoJob/ListUserVideosUseCase";
+import { GetVideoJobUseCase } from "@use-cases/videoJob/GetVideoJobUseCase";
+import { DownloadVideoZipUseCase } from "@use-cases/videoJob/DownloadVideoZipUseCase";
+import { UnauthorizedException } from "@domain/exceptions/ValidationException";
 
 type UploadedFile = {
   originalname: string;
@@ -18,7 +18,7 @@ function collectUploadedFiles(req: AuthenticatedRequest): UploadedFile[] {
     return fromArray;
   }
 
-  if (fromArray && typeof fromArray === 'object') {
+  if (fromArray && typeof fromArray === "object") {
     const fieldFiles = fromArray as Record<string, UploadedFile[]>;
     const videos = fieldFiles.videos ?? [];
     const single = fieldFiles.video ?? [];
@@ -49,8 +49,8 @@ export class VideoController {
     const files = collectUploadedFiles(req);
     if (files.length === 0) {
       res.status(400).json({
-        error: 'FILE_REQUIRED',
-        message: 'Arquivo de vídeo obrigatório',
+        error: "FILE_REQUIRED",
+        message: "Arquivo de vídeo obrigatório",
       });
       return;
     }
@@ -113,7 +113,7 @@ export class VideoController {
       throw new UnauthorizedException();
     }
 
-    const jobId = String(req.params.id ?? '');
+    const jobId = String(req.params.id ?? "");
     const job = await this.getVideo.execute(userId, jobId);
     res.status(200).json({
       id: job.id,
@@ -126,21 +126,24 @@ export class VideoController {
     });
   };
 
-  download = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  download = async (
+    req: AuthenticatedRequest,
+    res: Response,
+  ): Promise<void> => {
     const userId = req.userId;
     if (!userId) {
       throw new UnauthorizedException();
     }
 
-    const jobId = String(req.params.id ?? '');
+    const jobId = String(req.params.id ?? "");
     if (!jobId) {
-      res.status(400).json({ error: 'INVALID_ID' });
+      res.status(400).json({ error: "INVALID_ID" });
       return;
     }
 
     const { stream, fileName } = await this.downloadZip.execute(userId, jobId);
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     stream.pipe(res);
   };
 }

@@ -1,42 +1,42 @@
-import { SubmitVideoUseCase } from '@use-cases/videoJob/SubmitVideoUseCase';
-import { EntityNotFoundException } from '@domain/exceptions/ValidationException';
-import { UserRole } from '@domain/enums/UserRole';
-import { User } from '@domain/entities/User';
-import { VideoJob } from '@domain/entities/VideoJob';
-import { VideoJobStatus } from '@domain/enums/VideoJobStatus';
+import { SubmitVideoUseCase } from "@use-cases/videoJob/SubmitVideoUseCase";
+import { EntityNotFoundException } from "@domain/exceptions/ValidationException";
+import { UserRole } from "@domain/enums/UserRole";
+import { User } from "@domain/entities/User";
+import { VideoJob } from "@domain/entities/VideoJob";
+import { VideoJobStatus } from "@domain/enums/VideoJobStatus";
 import type {
   OnVideoJobCreatedHook,
   UserRepository,
   VideoJobRepository,
-} from '@domain/repositories/VideoRepositories';
+} from "@domain/repositories/VideoRepositories";
 import type {
   ObjectStoragePort,
   VideoProcessingRequestedEventPort,
-} from '@domain/outboundPorts/VideoPorts';
+} from "@domain/outboundPorts/VideoPorts";
 import type {
   LoggerService,
   ObservabilityMetricsService,
-} from '@domain/services/CoreServices';
-import type { ValidationService } from '@application/services/ValidationService';
+} from "@domain/services/CoreServices";
+import type { ValidationService } from "@application/services/ValidationService";
 
-describe('SubmitVideoUseCase', () => {
+describe("SubmitVideoUseCase", () => {
   const user = new User(
-    'user-id',
-    'user@fiap.com',
-    'hash',
+    "user-id",
+    "user@fiap.com",
+    "hash",
     UserRole.User,
     new Date(),
   );
 
   const job = new VideoJob(
-    'job-id',
-    'user-id',
-    'clip.mp4',
-    'storage/clip.mp4',
+    "job-id",
+    "user-id",
+    "clip.mp4",
+    "storage/clip.mp4",
     VideoJobStatus.Pending,
     null,
     null,
-    'corr-id',
+    "corr-id",
     new Date(),
     new Date(),
     null,
@@ -58,13 +58,14 @@ describe('SubmitVideoUseCase', () => {
       create: jest.fn(),
     };
     videoJobs = {
-      createJob: jest.fn().mockImplementation(async (
-        _input: unknown,
-        onCreated: OnVideoJobCreatedHook,
-      ) => {
-        await onCreated(job, jest.fn());
-        return job;
-      }),
+      createJob: jest
+        .fn()
+        .mockImplementation(
+          async (_input: unknown, onCreated: OnVideoJobCreatedHook) => {
+            await onCreated(job, jest.fn());
+            return job;
+          },
+        ),
       findByIdForUser: jest.fn(),
       listByUserId: jest.fn(),
       markProcessing: jest.fn(),
@@ -72,12 +73,14 @@ describe('SubmitVideoUseCase', () => {
       markFailed: jest.fn(),
     };
     storage = {
-      saveUploadedVideo: jest.fn().mockResolvedValue('storage/clip.mp4'),
+      saveUploadedVideo: jest.fn().mockResolvedValue("storage/clip.mp4"),
       zipExists: jest.fn(),
       getZipStream: jest.fn(),
     };
     events = {
-      buildEnvelope: jest.fn().mockReturnValue({ type: 'VideoProcessingRequested' }),
+      buildEnvelope: jest
+        .fn()
+        .mockReturnValue({ type: "VideoProcessingRequested" }),
     };
     logger = { log: jest.fn(), error: jest.fn(), warn: jest.fn() };
     recordVideoSubmitted = jest.fn();
@@ -100,35 +103,35 @@ describe('SubmitVideoUseCase', () => {
     );
   });
 
-  it('creates job and stores video when user exists', async () => {
-    const buffer = Buffer.from('video-bytes');
+  it("creates job and stores video when user exists", async () => {
+    const buffer = Buffer.from("video-bytes");
 
     const result = await useCase.execute({
-      userId: 'user-id',
-      originalFileName: 'clip.mp4',
+      userId: "user-id",
+      originalFileName: "clip.mp4",
       fileBuffer: buffer,
-      mimeType: 'video/mp4',
+      mimeType: "video/mp4",
     });
 
     expect(result).toBe(job);
     expect(storage.saveUploadedVideo).toHaveBeenCalledWith(
       expect.any(String),
       buffer,
-      'clip.mp4',
+      "clip.mp4",
     );
     expect(videoJobs.createJob).toHaveBeenCalled();
     expect(events.buildEnvelope).toHaveBeenCalledWith(job, user.email);
     expect(recordVideoSubmitted).toHaveBeenCalled();
   });
 
-  it('throws EntityNotFoundException when user does not exist', async () => {
+  it("throws EntityNotFoundException when user does not exist", async () => {
     users.findById.mockResolvedValue(null);
 
     await expect(
       useCase.execute({
-        userId: 'missing',
-        originalFileName: 'clip.mp4',
-        fileBuffer: Buffer.from('x'),
+        userId: "missing",
+        originalFileName: "clip.mp4",
+        fileBuffer: Buffer.from("x"),
       }),
     ).rejects.toBeInstanceOf(EntityNotFoundException);
 

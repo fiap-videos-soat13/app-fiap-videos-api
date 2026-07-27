@@ -1,14 +1,14 @@
-import { ListUserVideosUseCase } from '@use-cases/videoJob/ListUserVideosUseCase';
-import { VideoJob } from '@domain/entities/VideoJob';
-import { VideoJobStatus } from '@domain/enums/VideoJobStatus';
-import type { VideoJobRepository } from '@domain/repositories/VideoRepositories';
-import type { CachePort } from '@domain/services/CoreServices';
+import { ListUserVideosUseCase } from "@use-cases/videoJob/ListUserVideosUseCase";
+import { VideoJob } from "@domain/entities/VideoJob";
+import { VideoJobStatus } from "@domain/enums/VideoJobStatus";
+import type { VideoJobRepository } from "@domain/repositories/VideoRepositories";
+import type { CachePort } from "@domain/services/CoreServices";
 
 function makeJob(id: string): VideoJob {
-  const now = new Date('2026-01-15T10:00:00.000Z');
+  const now = new Date("2026-01-15T10:00:00.000Z");
   return new VideoJob(
     id,
-    'user-id',
+    "user-id",
     `${id}.mp4`,
     `storage/${id}.mp4`,
     VideoJobStatus.Pending,
@@ -21,7 +21,7 @@ function makeJob(id: string): VideoJob {
   );
 }
 
-describe('ListUserVideosUseCase', () => {
+describe("ListUserVideosUseCase", () => {
   let videoJobs: jest.Mocked<VideoJobRepository>;
   let cache: jest.Mocked<CachePort>;
   let useCase: ListUserVideosUseCase;
@@ -43,8 +43,8 @@ describe('ListUserVideosUseCase', () => {
     useCase = new ListUserVideosUseCase(videoJobs, cache);
   });
 
-  it('returns cached jobs on cache hit', async () => {
-    const job = makeJob('job-1');
+  it("returns cached jobs on cache hit", async () => {
+    const job = makeJob("job-1");
     cache.getJson.mockResolvedValue([
       {
         id: job.id,
@@ -61,25 +61,25 @@ describe('ListUserVideosUseCase', () => {
       },
     ]);
 
-    const result = await useCase.execute('user-id');
+    const result = await useCase.execute("user-id");
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('job-1');
+    expect(result[0].id).toBe("job-1");
     expect(videoJobs.listByUserId).not.toHaveBeenCalled();
     expect(cache.setJson).not.toHaveBeenCalled();
   });
 
-  it('loads from repository and caches on cache miss', async () => {
+  it("loads from repository and caches on cache miss", async () => {
     cache.getJson.mockResolvedValue(null);
-    const jobs = [makeJob('job-1'), makeJob('job-2')];
+    const jobs = [makeJob("job-1"), makeJob("job-2")];
     videoJobs.listByUserId.mockResolvedValue(jobs);
 
-    const result = await useCase.execute('user-id');
+    const result = await useCase.execute("user-id");
 
     expect(result).toEqual(jobs);
-    expect(videoJobs.listByUserId).toHaveBeenCalledWith('user-id');
+    expect(videoJobs.listByUserId).toHaveBeenCalledWith("user-id");
     expect(cache.setJson).toHaveBeenCalledWith(
-      'videos:list:user-id',
+      "videos:list:user-id",
       expect.any(Array),
       30,
     );

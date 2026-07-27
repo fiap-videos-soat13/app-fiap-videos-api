@@ -1,5 +1,5 @@
-import Redis from 'ioredis';
-import { CachePort } from '@domain/services/CoreServices';
+import Redis from "ioredis";
+import { CachePort } from "@domain/services/CoreServices";
 
 export class RedisCacheAdapter extends CachePort {
   private readonly client: Redis;
@@ -17,12 +17,8 @@ export class RedisCacheAdapter extends CachePort {
     return JSON.parse(raw) as T;
   }
 
-  async setJson<T>(
-    key: string,
-    value: T,
-    ttlSeconds: number,
-  ): Promise<void> {
-    await this.client.set(key, JSON.stringify(value), 'EX', ttlSeconds);
+  async setJson<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+    await this.client.set(key, JSON.stringify(value), "EX", ttlSeconds);
   }
 
   async delete(key: string): Promise<void> {

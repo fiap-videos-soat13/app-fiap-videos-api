@@ -1,23 +1,26 @@
-import type { Express } from 'express';
-import { setupSwagger } from '../swagger/setup';
-import { metricsHandler } from '../middleware/metrics.middleware';
-import { errorHandler } from '../error-handler';
-import { checkDatabaseConnectivity } from '@adapter/infra/database/client';
-import type { InfrastructureContext } from './types';
+import type { Express } from "express";
+import { setupSwagger } from "../swagger/setup";
+import { metricsHandler } from "../middleware/metrics.middleware";
+import { errorHandler } from "../error-handler";
+import { checkDatabaseConnectivity } from "@adapter/infra/database/client";
+import type { InfrastructureContext } from "./types";
 
 function registerHealthRoutes(app: Express): void {
-  app.get('/health/live', (_req, res) => {
-    res.status(200).json({ status: 'ok' });
+  app.get("/health/live", (_req, res) => {
+    res.status(200).json({ status: "ok" });
   });
-  app.get('/health/ready', (_req, res) => {
+  app.get("/health/ready", (_req, res) => {
     void checkDatabaseConnectivity().then((ok) => {
-      res.status(ok ? 200 : 503).json({ database: ok ? 'up' : 'down' });
+      res.status(ok ? 200 : 503).json({ database: ok ? "up" : "down" });
     });
   });
 }
 
-function registerMetricsRoutes(app: Express, infra: InfrastructureContext): void {
-  app.get('/metrics', (req, res, next) => {
+function registerMetricsRoutes(
+  app: Express,
+  infra: InfrastructureContext,
+): void {
+  app.get("/metrics", (req, res, next) => {
     void metricsHandler(
       req,
       res,

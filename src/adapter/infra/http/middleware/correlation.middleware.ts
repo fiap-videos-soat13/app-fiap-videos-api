@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
-import { randomUUID } from 'node:crypto';
+import type { Request, Response, NextFunction } from "express";
+import { randomUUID } from "node:crypto";
 
 export type AuthenticatedRequest = Request & {
   correlationId?: string;
@@ -13,9 +13,9 @@ export function correlationMiddleware(
   res: Response,
   next: NextFunction,
 ): void {
-  const incoming = req.header('x-correlation-id');
+  const incoming = req.header("x-correlation-id");
   const correlationId = incoming?.trim() || randomUUID();
   (req as AuthenticatedRequest).correlationId = correlationId;
-  res.setHeader('x-correlation-id', correlationId);
+  res.setHeader("x-correlation-id", correlationId);
   next();
 }

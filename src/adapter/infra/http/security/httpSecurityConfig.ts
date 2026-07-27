@@ -1,4 +1,4 @@
-import type { CorsOptions } from 'cors';
+import type { CorsOptions } from "cors";
 
 export function resolveCorsOptions(): CorsOptions {
   const raw = process.env.CORS_ORIGINS?.trim();
@@ -7,7 +7,7 @@ export function resolveCorsOptions(): CorsOptions {
   }
 
   const origins = raw
-    .split(',')
+    .split(",")
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
 
@@ -22,8 +22,8 @@ export function resolveCorsOptions(): CorsOptions {
 }
 
 export function shouldTrustProxy(): boolean {
-  if (process.env.TRUST_PROXY === 'true') {
+  if (process.env.TRUST_PROXY === "true") {
     return true;
   }
-  return process.env.NODE_ENV === 'production';
+  return process.env.NODE_ENV === "production";
 }

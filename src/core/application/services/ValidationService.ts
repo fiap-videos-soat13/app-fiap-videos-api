@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z } from "zod";
 import {
   ValidationErrorHandler,
   type ValidationError,
-} from '@domain/services/ValidationErrorHandler';
+} from "@domain/services/ValidationErrorHandler";
 
 export interface ValidationResult<T> {
   success: boolean;
@@ -40,17 +40,18 @@ export class ValidationService {
       if (error instanceof z.ZodError) {
         const validationErrors: ValidationError[] = error.issues.map(
           (issue) => ({
-            field: issue.path.join('.'),
+            field: issue.path.join("."),
             message: issue.message,
             code: issue.code,
           }),
         );
         return { success: false, errors: validationErrors };
       }
-      const errorObj = error instanceof Error ? error : new Error(String(error));
+      const errorObj =
+        error instanceof Error ? error : new Error(String(error));
       return {
         success: false,
-        errors: [{ field: '', message: errorObj.message, code: 'custom' }],
+        errors: [{ field: "", message: errorObj.message, code: "custom" }],
       };
     }
   }

@@ -1,6 +1,6 @@
-import { User } from '@domain/entities/User';
-import { UserRole } from '@domain/enums/UserRole';
-import type { users } from '@adapter/infra/database/schema/users';
+import { User } from "@domain/entities/User";
+import { UserRole } from "@domain/enums/UserRole";
+import type { users } from "@adapter/infra/database/schema/users";
 
 type DbUser = typeof users.$inferSelect;
 

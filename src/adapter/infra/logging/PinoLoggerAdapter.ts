@@ -1,6 +1,6 @@
-import pino from 'pino';
-import { LoggerPort } from '@domain/outboundPorts/LoggerPort';
-import { resolveLogFormat } from './logFormat';
+import pino from "pino";
+import { LoggerPort } from "@domain/outboundPorts/LoggerPort";
+import { resolveLogFormat } from "./logFormat";
 
 export class PinoLoggerAdapter extends LoggerPort {
   private readonly logger: pino.Logger;
@@ -8,19 +8,19 @@ export class PinoLoggerAdapter extends LoggerPort {
   constructor(serviceName: string) {
     super();
     const format = resolveLogFormat();
-    const level = process.env.LOG_LEVEL?.trim() || 'info';
+    const level = process.env.LOG_LEVEL?.trim() || "info";
 
     this.logger = pino({
       level,
       base: { app: serviceName },
-      ...(format === 'pretty'
+      ...(format === "pretty"
         ? {
             transport: {
-              target: 'pino-pretty',
+              target: "pino-pretty",
               options: {
                 colorize: true,
-                translateTime: 'SYS:standard',
-                ignore: 'pid,hostname',
+                translateTime: "SYS:standard",
+                ignore: "pid,hostname",
               },
             },
           }
