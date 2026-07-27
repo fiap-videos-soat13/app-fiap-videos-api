@@ -1,13 +1,10 @@
-import { asc, eq, isNull, sql } from 'drizzle-orm';
-import { getDb } from '@adapter/infra/database/client';
-import {
-  outbox,
-  outboxDeadLetters,
-} from '@adapter/infra/database/schema';
-import { parseEnvelope } from '@validators/VideoEventEnvelopeValidator';
-import { AmqpPublisher } from '../amqp/AmqpPublisher';
-import { ConsoleLoggerService } from '@adapter/infra/services/ConsoleLoggerService';
-import type { SagaMetricsService } from '@adapter/infra/observability/SagaMetricsService';
+import { asc, eq, isNull, sql } from "drizzle-orm";
+import { getDb } from "@adapter/infra/database/client";
+import { outbox, outboxDeadLetters } from "@adapter/infra/database/schema";
+import { parseEnvelope } from "@validators/VideoEventEnvelopeValidator";
+import { AmqpPublisher } from "../amqp/AmqpPublisher";
+import { ConsoleLoggerService } from "@adapter/infra/services/ConsoleLoggerService";
+import type { SagaMetricsService } from "@adapter/infra/observability/SagaMetricsService";
 
 const BATCH_SIZE = 32;
 const MAX_ATTEMPTS_DEFAULT = 10;
@@ -58,7 +55,7 @@ export class OutboxRelayWorker {
         .where(isNull(outbox.publishedAt))
         .orderBy(asc(outbox.occurredAt))
         .limit(BATCH_SIZE)
-        .for('update', { skipLocked: true });
+        .for("update", { skipLocked: true });
 
       for (const row of records) {
         try {
@@ -73,8 +70,7 @@ export class OutboxRelayWorker {
         } catch (err) {
           failed += 1;
           const attempts = (row.attempts ?? 0) + 1;
-          const message =
-            err instanceof Error ? err.message : 'publish failed';
+          const message = err instanceof Error ? err.message : "publish failed";
 
           if (attempts >= this.maxAttempts) {
             await tx.insert(outboxDeadLetters).values({

@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';
-import jwt, { type SignOptions } from 'jsonwebtoken';
-import { PasswordHasher, TokenService } from '@domain/services/CoreServices';
-import { UnauthorizedException } from '@domain/exceptions/ValidationException';
+import bcrypt from "bcryptjs";
+import jwt, { type SignOptions } from "jsonwebtoken";
+import { PasswordHasher, TokenService } from "@domain/services/CoreServices";
+import { UnauthorizedException } from "@domain/exceptions/ValidationException";
 
 export class BcryptPasswordHasher extends PasswordHasher {
   async hash(plain: string): Promise<string> {
@@ -25,7 +25,7 @@ export class JwtTokenService extends TokenService {
 
   sign(payload: JwtPayload): string {
     const options: SignOptions = {
-      expiresIn: this.expiresIn as SignOptions['expiresIn'],
+      expiresIn: this.expiresIn as SignOptions["expiresIn"],
     };
     return jwt.sign(payload, this.secret, options);
   }
@@ -34,16 +34,16 @@ export class JwtTokenService extends TokenService {
     try {
       const decoded = jwt.verify(token, this.secret);
       if (
-        typeof decoded !== 'object' ||
+        typeof decoded !== "object" ||
         decoded === null ||
-        !('sub' in decoded) ||
-        !('email' in decoded) ||
-        !('role' in decoded) ||
-        typeof decoded.sub !== 'string' ||
-        typeof decoded.email !== 'string' ||
-        typeof decoded.role !== 'string'
+        !("sub" in decoded) ||
+        !("email" in decoded) ||
+        !("role" in decoded) ||
+        typeof decoded.sub !== "string" ||
+        typeof decoded.email !== "string" ||
+        typeof decoded.role !== "string"
       ) {
-        throw new UnauthorizedException('Token inválido');
+        throw new UnauthorizedException("Token inválido");
       }
       return {
         sub: decoded.sub,
@@ -51,7 +51,7 @@ export class JwtTokenService extends TokenService {
         role: decoded.role,
       };
     } catch {
-      throw new UnauthorizedException('Token inválido');
+      throw new UnauthorizedException("Token inválido");
     }
   }
 }

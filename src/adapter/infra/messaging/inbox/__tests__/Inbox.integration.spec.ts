@@ -1,11 +1,11 @@
-import { randomUUID } from 'node:crypto';
-import { and, eq } from 'drizzle-orm';
-import { Inbox } from '../Inbox';
-import { getDb } from '@adapter/infra/database/client';
-import { processedEvents } from '@adapter/infra/database/schema';
-import { ConsoleLoggerService } from '@adapter/infra/services/ConsoleLoggerService';
-import { VideoEventType } from '@validators/VideoEventEnvelopeValidator';
-import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
+import { randomUUID } from "node:crypto";
+import { and, eq } from "drizzle-orm";
+import { Inbox } from "../Inbox";
+import { getDb } from "@adapter/infra/database/client";
+import { processedEvents } from "@adapter/infra/database/schema";
+import { ConsoleLoggerService } from "@adapter/infra/services/ConsoleLoggerService";
+import { VideoEventType } from "@validators/VideoEventEnvelopeValidator";
+import type { VideoEventEnvelope } from "@validators/VideoEventEnvelopeValidator";
 
 function buildEnvelope(eventId = randomUUID()): VideoEventEnvelope {
   return {
@@ -18,9 +18,9 @@ function buildEnvelope(eventId = randomUUID()): VideoEventEnvelope {
     schemaVersion: 1,
     payload: {
       userId: randomUUID(),
-      userEmail: 'inbox@fiap.local',
-      originalFileName: 'video.mp4',
-      zipStorageKey: 'zips/video.zip',
+      userEmail: "inbox@fiap.local",
+      originalFileName: "video.mp4",
+      zipStorageKey: "zips/video.zip",
       completedAt: new Date().toISOString(),
     },
   };
@@ -42,11 +42,11 @@ async function countRows(
   return rows.length;
 }
 
-describe('Inbox integration', () => {
-  const inbox = new Inbox(new ConsoleLoggerService('inbox-integration-test'));
-  const consumer = 'api.VideoProcessingCompleted';
+describe("Inbox integration", () => {
+  const inbox = new Inbox(new ConsoleLoggerService("inbox-integration-test"));
+  const consumer = "api.VideoProcessingCompleted";
 
-  it('processes a new event and persists the processed_events row', async () => {
+  it("processes a new event and persists the processed_events row", async () => {
     const envelope = buildEnvelope();
     let handled = 0;
 
@@ -60,7 +60,7 @@ describe('Inbox integration', () => {
     expect(await countRows(envelope.eventId, consumer)).toBe(1);
   });
 
-  it('skips a duplicate event for the same consumer', async () => {
+  it("skips a duplicate event for the same consumer", async () => {
     const envelope = buildEnvelope();
     let handled = 0;
     const handler = (): Promise<void> => {
@@ -75,9 +75,9 @@ describe('Inbox integration', () => {
     expect(await countRows(envelope.eventId, consumer)).toBe(1);
   });
 
-  it('processes the same event for a different consumer', async () => {
+  it("processes the same event for a different consumer", async () => {
     const envelope = buildEnvelope();
-    const otherConsumer = 'api.VideoProcessingCompleted.audit';
+    const otherConsumer = "api.VideoProcessingCompleted.audit";
 
     const noop = (): Promise<void> => Promise.resolve();
 
@@ -88,16 +88,16 @@ describe('Inbox integration', () => {
     expect(await countRows(envelope.eventId, otherConsumer)).toBe(1);
   });
 
-  it('removes the processed_events row when the handler fails, allowing a retry', async () => {
+  it("removes the processed_events row when the handler fails, allowing a retry", async () => {
     const envelope = buildEnvelope();
     let attempts = 0;
 
     await expect(
       inbox.runOnce(envelope, consumer, () => {
         attempts += 1;
-        return Promise.reject(new Error('handler exploded'));
+        return Promise.reject(new Error("handler exploded"));
       }),
-    ).rejects.toThrow('handler exploded');
+    ).rejects.toThrow("handler exploded");
 
     expect(attempts).toBe(1);
     expect(await countRows(envelope.eventId, consumer)).toBe(0);

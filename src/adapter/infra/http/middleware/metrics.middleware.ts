@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
-import { Counter, Gauge, Histogram, type Registry } from 'prom-client';
+import type { Request, Response, NextFunction } from "express";
+import { Counter, Gauge, Histogram, type Registry } from "prom-client";
 
 function getOrCreateCounter(
   registry: Registry,
@@ -40,19 +40,19 @@ export function registerHttpMetrics(registry: Registry): {
 } {
   const requestsTotal = getOrCreateCounter(
     registry,
-    'http_requests_total',
-    'Total de requisições HTTP',
-    ['method', 'route', 'status_code'],
+    "http_requests_total",
+    "Total de requisições HTTP",
+    ["method", "route", "status_code"],
   );
   const requestDuration = getOrCreateHistogram(
     registry,
-    'http_request_duration_seconds',
-    'Duração das requisições HTTP em segundos',
-    ['method', 'route', 'status_code'],
+    "http_request_duration_seconds",
+    "Duração das requisições HTTP em segundos",
+    ["method", "route", "status_code"],
   );
   const databaseUp = new Gauge({
-    name: 'database_up',
-    help: '1 se o banco responde, 0 caso contrário',
+    name: "database_up",
+    help: "1 se o banco responde, 0 caso contrário",
     registers: [registry],
   });
   return { requestsTotal, requestDuration, databaseUp };
@@ -64,11 +64,11 @@ export function createMetricsMiddleware(
 ) {
   return (req: Request, res: Response, next: NextFunction): void => {
     const start = Date.now();
-    const method = req.method || 'unknown';
+    const method = req.method || "unknown";
     const routePath = (req.route as { path?: string } | undefined)?.path;
     const route = routePath ? `${req.baseUrl}${routePath}` : req.path;
 
-    res.on('finish', () => {
+    res.on("finish", () => {
       const durationSec = (Date.now() - start) / 1000;
       const statusCode = String(res.statusCode || 0);
       metrics.requestsTotal.inc({ method, route, status_code: statusCode });
@@ -91,6 +91,6 @@ export async function metricsHandler(
 ): Promise<void> {
   const ok = await checkDb();
   databaseUp.set(ok ? 1 : 0);
-  res.setHeader('Content-Type', registry.contentType);
+  res.setHeader("Content-Type", registry.contentType);
   res.send(await registry.metrics());
 }

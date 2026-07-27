@@ -1,11 +1,8 @@
-import type { VideoJob } from '@domain/entities/VideoJob';
-import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
+import type { VideoJob } from "@domain/entities/VideoJob";
+import type { VideoEventEnvelope } from "@validators/VideoEventEnvelopeValidator";
 
 export abstract class VideoProcessingRequestedEventPort {
-  abstract buildEnvelope(
-    job: VideoJob,
-    userEmail: string,
-  ): VideoEventEnvelope;
+  abstract buildEnvelope(job: VideoJob, userEmail: string): VideoEventEnvelope;
 }
 
 export abstract class ObjectStoragePort {
@@ -15,9 +12,7 @@ export abstract class ObjectStoragePort {
     originalFileName: string,
   ): Promise<string>;
 
-  abstract getZipStream(
-    zipStorageKey: string,
-  ): Promise<NodeJS.ReadableStream>;
+  abstract getZipStream(zipStorageKey: string): Promise<NodeJS.ReadableStream>;
 
   abstract zipExists(zipStorageKey: string): Promise<boolean>;
 }

@@ -1,32 +1,32 @@
-import { DownloadVideoZipUseCase } from '@use-cases/videoJob/DownloadVideoZipUseCase';
+import { DownloadVideoZipUseCase } from "@use-cases/videoJob/DownloadVideoZipUseCase";
 import {
   BusinessRuleException,
   EntityNotFoundException,
-} from '@domain/exceptions/ValidationException';
-import { VideoJob } from '@domain/entities/VideoJob';
-import { VideoJobStatus } from '@domain/enums/VideoJobStatus';
-import type { VideoJobRepository } from '@domain/repositories/VideoRepositories';
-import type { ObjectStoragePort } from '@domain/outboundPorts/VideoPorts';
-import { Readable } from 'node:stream';
+} from "@domain/exceptions/ValidationException";
+import { VideoJob } from "@domain/entities/VideoJob";
+import { VideoJobStatus } from "@domain/enums/VideoJobStatus";
+import type { VideoJobRepository } from "@domain/repositories/VideoRepositories";
+import type { ObjectStoragePort } from "@domain/outboundPorts/VideoPorts";
+import { Readable } from "node:stream";
 
 function makeJob(status: VideoJobStatus, zipKey: string | null): VideoJob {
   const now = new Date();
   return new VideoJob(
-    'job-id',
-    'user-id',
-    'my-video.mp4',
-    'storage/my-video.mp4',
+    "job-id",
+    "user-id",
+    "my-video.mp4",
+    "storage/my-video.mp4",
     status,
     zipKey,
     null,
-    'corr-id',
+    "corr-id",
     now,
     now,
     status === VideoJobStatus.Completed ? now : null,
   );
 }
 
-describe('DownloadVideoZipUseCase', () => {
+describe("DownloadVideoZipUseCase", () => {
   let videoJobs: jest.Mocked<VideoJobRepository>;
   let storage: jest.Mocked<ObjectStoragePort>;
   let useCase: DownloadVideoZipUseCase;
@@ -48,47 +48,47 @@ describe('DownloadVideoZipUseCase', () => {
     useCase = new DownloadVideoZipUseCase(videoJobs, storage);
   });
 
-  it('throws when job is not found for user', async () => {
+  it("throws when job is not found for user", async () => {
     videoJobs.findByIdForUser.mockResolvedValue(null);
 
-    await expect(useCase.execute('user-id', 'job-id')).rejects.toBeInstanceOf(
+    await expect(useCase.execute("user-id", "job-id")).rejects.toBeInstanceOf(
       EntityNotFoundException,
     );
   });
 
-  it('throws when job is not completed', async () => {
+  it("throws when job is not completed", async () => {
     videoJobs.findByIdForUser.mockResolvedValue(
       makeJob(VideoJobStatus.Processing, null),
     );
 
-    await expect(useCase.execute('user-id', 'job-id')).rejects.toBeInstanceOf(
+    await expect(useCase.execute("user-id", "job-id")).rejects.toBeInstanceOf(
       BusinessRuleException,
     );
   });
 
-  it('throws when zip file is missing in storage', async () => {
+  it("throws when zip file is missing in storage", async () => {
     videoJobs.findByIdForUser.mockResolvedValue(
-      makeJob(VideoJobStatus.Completed, 'zips/job.zip'),
+      makeJob(VideoJobStatus.Completed, "zips/job.zip"),
     );
     storage.zipExists.mockResolvedValue(false);
 
-    await expect(useCase.execute('user-id', 'job-id')).rejects.toBeInstanceOf(
+    await expect(useCase.execute("user-id", "job-id")).rejects.toBeInstanceOf(
       EntityNotFoundException,
     );
   });
 
-  it('returns stream and derived file name on happy path', async () => {
+  it("returns stream and derived file name on happy path", async () => {
     videoJobs.findByIdForUser.mockResolvedValue(
-      makeJob(VideoJobStatus.Completed, 'zips/job.zip'),
+      makeJob(VideoJobStatus.Completed, "zips/job.zip"),
     );
     storage.zipExists.mockResolvedValue(true);
-    const stream = Readable.from(['zip']);
+    const stream = Readable.from(["zip"]);
     storage.getZipStream.mockResolvedValue(stream);
 
-    const result = await useCase.execute('user-id', 'job-id');
+    const result = await useCase.execute("user-id", "job-id");
 
     expect(result.stream).toBe(stream);
-    expect(result.fileName).toBe('my-video-frames.zip');
-    expect(storage.getZipStream).toHaveBeenCalledWith('zips/job.zip');
+    expect(result.fileName).toBe("my-video-frames.zip");
+    expect(storage.getZipStream).toHaveBeenCalledWith("zips/job.zip");
   });
 });

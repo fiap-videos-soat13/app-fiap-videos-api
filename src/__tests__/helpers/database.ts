@@ -3,14 +3,14 @@ import {
   resetDatabase,
   runMigrations,
   closeDb,
-} from '@adapter/infra/database/client';
-import * as schema from '@adapter/infra/database/schema';
+} from "@adapter/infra/database/client";
+import * as schema from "@adapter/infra/database/schema";
 
 const DEFAULT_TEST_DATABASE_URL =
-  'postgresql://fiap:fiap@localhost:5432/fiap_videos_api_test';
+  "postgresql://fiap:fiap@localhost:5432/fiap_videos_api_test";
 
 function assertTestDatabase(url: string): void {
-  if (!url.includes('_test')) {
+  if (!url.includes("_test")) {
     throw new Error(
       `Refusing to run integration tests against a non-test database: ${url}`,
     );

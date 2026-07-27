@@ -1,6 +1,6 @@
-import { EntityNotFoundException } from '@domain/exceptions/ValidationException';
-import { VideoJobRepository } from '@domain/repositories/VideoRepositories';
-import { CachePort, LoggerService } from '@domain/services/CoreServices';
+import { EntityNotFoundException } from "@domain/exceptions/ValidationException";
+import { VideoJobRepository } from "@domain/repositories/VideoRepositories";
+import { CachePort, LoggerService } from "@domain/services/CoreServices";
 
 export class ApplyVideoProcessingFailedUseCase {
   constructor(
@@ -24,7 +24,7 @@ export class ApplyVideoProcessingFailedUseCase {
       );
     }
     await this.cache.delete(`videos:list:${input.userId}`);
-    this.logger.log('Status sincronizado: failed', {
+    this.logger.log("Status sincronizado: failed", {
       videoJobId: input.videoJobId,
     });
   }

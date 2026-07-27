@@ -1,7 +1,7 @@
-import type { User } from '@domain/entities/User';
-import type { UserRole } from '@domain/enums/UserRole';
-import type { VideoJob } from '@domain/entities/VideoJob';
-import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
+import type { User } from "@domain/entities/User";
+import type { UserRole } from "@domain/enums/UserRole";
+import type { VideoJob } from "@domain/entities/VideoJob";
+import type { VideoEventEnvelope } from "@validators/VideoEventEnvelopeValidator";
 
 export type OnVideoJobCreatedHook = (
   job: VideoJob,

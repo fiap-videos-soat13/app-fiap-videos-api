@@ -1,26 +1,25 @@
-import { Router } from 'express';
-import multer from 'multer';
-import type { VideoController } from '../controllers/VideoController';
+import { Router } from "express";
+import multer from "multer";
+import type { VideoController } from "../controllers/VideoController";
 
 export function buildVideoRoutes(controller: VideoController): Router {
   const router = Router();
-  const maxBytes =
-    Number(process.env.MAX_UPLOAD_BYTES) || 100 * 1024 * 1024;
+  const maxBytes = Number(process.env.MAX_UPLOAD_BYTES) || 100 * 1024 * 1024;
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: maxBytes },
   });
 
   router.post(
-    '/',
+    "/",
     upload.fields([
-      { name: 'video', maxCount: 1 },
-      { name: 'videos', maxCount: 10 },
+      { name: "video", maxCount: 1 },
+      { name: "videos", maxCount: 10 },
     ]),
     controller.submit,
   );
-  router.get('/', controller.list);
-  router.get('/:id/download', controller.download);
-  router.get('/:id', controller.getById);
+  router.get("/", controller.list);
+  router.get("/:id/download", controller.download);
+  router.get("/:id", controller.getById);
   return router;
 }

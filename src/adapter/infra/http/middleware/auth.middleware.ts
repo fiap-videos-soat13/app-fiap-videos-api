@@ -1,47 +1,47 @@
-import type { Request, Response, NextFunction } from 'express';
-import { TokenService } from '@domain/services/CoreServices';
+import type { Request, Response, NextFunction } from "express";
+import { TokenService } from "@domain/services/CoreServices";
 import {
   ForbiddenException,
   UnauthorizedException,
-} from '@domain/exceptions/ValidationException';
-import { UserRole } from '@domain/enums/UserRole';
-import type { AuthenticatedRequest } from './correlation.middleware';
+} from "@domain/exceptions/ValidationException";
+import { UserRole } from "@domain/enums/UserRole";
+import type { AuthenticatedRequest } from "./correlation.middleware";
 
-const AUTH_COOKIE = 'fiap_token';
+const AUTH_COOKIE = "fiap_token";
 
 function isProduction(): boolean {
-  return process.env.NODE_ENV === 'production';
+  return process.env.NODE_ENV === "production";
 }
 
 function buildAuthCookieValue(token: string, maxAge?: number): string {
   const parts = [
     `${AUTH_COOKIE}=${token}`,
-    'Path=/',
-    'HttpOnly',
-    `SameSite=${isProduction() ? 'Strict' : 'Lax'}`,
+    "Path=/",
+    "HttpOnly",
+    `SameSite=${isProduction() ? "Strict" : "Lax"}`,
   ];
 
   if (isProduction()) {
-    parts.push('Secure');
+    parts.push("Secure");
   }
 
   if (maxAge !== undefined) {
     parts.push(`Max-Age=${maxAge}`);
   }
 
-  return parts.join('; ');
+  return parts.join("; ");
 }
 
 function parseCookies(req: Request): Record<string, string> {
-  const header = req.header('cookie');
+  const header = req.header("cookie");
   if (!header) {
     return {};
   }
 
   return Object.fromEntries(
-    header.split(';').map((part) => {
-      const [key, ...rest] = part.trim().split('=');
-      return [key, decodeURIComponent(rest.join('='))];
+    header.split(";").map((part) => {
+      const [key, ...rest] = part.trim().split("=");
+      return [key, decodeURIComponent(rest.join("="))];
     }),
   );
 }
@@ -60,15 +60,15 @@ export class AuthMiddleware {
 
   static getInstance(): AuthMiddleware {
     if (!AuthMiddleware.instance) {
-      throw new Error('AuthMiddleware not initialized');
+      throw new Error("AuthMiddleware not initialized");
     }
     return AuthMiddleware.instance;
   }
 
   private extractToken(req: Request): string | null {
-    const header = req.header('authorization');
-    if (header?.startsWith('Bearer ')) {
-      return header.slice('Bearer '.length).trim();
+    const header = req.header("authorization");
+    if (header?.startsWith("Bearer ")) {
+      return header.slice("Bearer ".length).trim();
     }
 
     const cookies = parseCookies(req);
@@ -82,7 +82,8 @@ export class AuthMiddleware {
   ): void {
     req.userId = payload.sub;
     req.userEmail = payload.email;
-    req.userRole = payload.role === UserRole.Admin ? UserRole.Admin : UserRole.User;
+    req.userRole =
+      payload.role === UserRole.Admin ? UserRole.Admin : UserRole.User;
   }
 
   authenticateApi = (
@@ -93,7 +94,7 @@ export class AuthMiddleware {
     const authed = req as AuthenticatedRequest;
     const token = this.extractToken(req);
     if (!token) {
-      next(new UnauthorizedException('Token ausente'));
+      next(new UnauthorizedException("Token ausente"));
       return;
     }
 
@@ -106,15 +107,11 @@ export class AuthMiddleware {
     }
   };
 
-  requireAdmin = (
-    req: Request,
-    _res: Response,
-    next: NextFunction,
-  ): void => {
+  requireAdmin = (req: Request, _res: Response, next: NextFunction): void => {
     const authed = req as AuthenticatedRequest;
     const token = this.extractToken(req);
     if (!token) {
-      next(new UnauthorizedException('Token ausente'));
+      next(new UnauthorizedException("Token ausente"));
       return;
     }
 
@@ -122,7 +119,11 @@ export class AuthMiddleware {
       const payload = this.tokens.verify(token);
       this.applyAuth(authed, payload);
       if (authed.userRole !== UserRole.Admin) {
-        next(new ForbiddenException('Apenas administradores podem registrar usuários'));
+        next(
+          new ForbiddenException(
+            "Apenas administradores podem registrar usuários",
+          ),
+        );
         return;
       }
       next();
@@ -164,9 +165,9 @@ export class AuthMiddleware {
       this.tokens.verify(token);
       const redirectParam = req.query.redirect;
       const redirect =
-        typeof redirectParam === 'string' && redirectParam.startsWith('/')
+        typeof redirectParam === "string" && redirectParam.startsWith("/")
           ? redirectParam
-          : '/status';
+          : "/status";
       res.redirect(redirect);
     } catch {
       next();
@@ -174,10 +175,10 @@ export class AuthMiddleware {
   };
 
   static setAuthCookie(res: Response, token: string): void {
-    res.setHeader('Set-Cookie', buildAuthCookieValue(token));
+    res.setHeader("Set-Cookie", buildAuthCookieValue(token));
   }
 
   static clearAuthCookie(res: Response): void {
-    res.setHeader('Set-Cookie', buildAuthCookieValue('', 0));
+    res.setHeader("Set-Cookie", buildAuthCookieValue("", 0));
   }
 }

@@ -1,19 +1,19 @@
-import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
-import { getDb } from '@adapter/infra/database/client';
-import { users, videoJobs, outbox } from '@adapter/infra/database/schema';
+import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
+import { getDb } from "@adapter/infra/database/client";
+import { users, videoJobs, outbox } from "@adapter/infra/database/schema";
 import {
   UserRepository,
   VideoJobRepository,
   type OnVideoJobCreatedHook,
-} from '@domain/repositories/VideoRepositories';
-import { VideoJobStatus } from '@domain/enums/VideoJobStatus';
-import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
-import { UserDbAssembler } from '@adapter/infra/repository/assemblers/UserDbAssembler';
-import { VideoJobDbAssembler } from '@adapter/infra/repository/assemblers/VideoJobDbAssembler';
-import type { VideoJob } from '@domain/entities/VideoJob';
-import type { User } from '@domain/entities/User';
-import { UserRole } from '@domain/enums/UserRole';
+} from "@domain/repositories/VideoRepositories";
+import { VideoJobStatus } from "@domain/enums/VideoJobStatus";
+import type { VideoEventEnvelope } from "@validators/VideoEventEnvelopeValidator";
+import { UserDbAssembler } from "@adapter/infra/repository/assemblers/UserDbAssembler";
+import { VideoJobDbAssembler } from "@adapter/infra/repository/assemblers/VideoJobDbAssembler";
+import type { VideoJob } from "@domain/entities/VideoJob";
+import type { User } from "@domain/entities/User";
+import { UserRole } from "@domain/enums/UserRole";
 
 export class DrizzleUserRepository extends UserRepository {
   async findByEmail(email: string): Promise<User | null> {
@@ -44,7 +44,7 @@ export class DrizzleUserRepository extends UserRepository {
       .values({ email, passwordHash, role })
       .returning();
     if (!row) {
-      throw new Error('Failed to create user');
+      throw new Error("Failed to create user");
     }
     return UserDbAssembler.toDomain(row);
   }
@@ -74,7 +74,7 @@ export class DrizzleVideoJobRepository extends VideoJobRepository {
         .returning();
 
       if (!row) {
-        throw new Error('Failed to create video job');
+        throw new Error("Failed to create video job");
       }
 
       const job = VideoJobDbAssembler.toDomain(row);
@@ -83,7 +83,7 @@ export class DrizzleVideoJobRepository extends VideoJobRepository {
         await onCreated(job, async (envelope: VideoEventEnvelope) => {
           await tx.insert(outbox).values({
             id: envelope.eventId,
-            aggregateType: 'VideoJob',
+            aggregateType: "VideoJob",
             aggregateId: job.id,
             eventType: envelope.eventType,
             payload: envelope,
