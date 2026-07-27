@@ -3,7 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { Inbox } from '../Inbox';
 import { getDb } from '@adapter/infra/database/client';
 import { processedEvents } from '@adapter/infra/database/schema';
-import { ConsoleLoggerService } from '@adapter/infra/services/ConsoleLoggerService';
+import { createLogger } from '@adapter/infra/logging/loggerFactory';
 import { VideoEventType } from '@validators/VideoEventEnvelopeValidator';
 import type { VideoEventEnvelope } from '@validators/VideoEventEnvelopeValidator';
 
@@ -43,7 +43,7 @@ async function countRows(
 }
 
 describe('Inbox integration', () => {
-  const inbox = new Inbox(new ConsoleLoggerService('inbox-integration-test'));
+  const inbox = new Inbox(createLogger('inbox-integration-test'));
   const consumer = 'api.VideoProcessingCompleted';
 
   it('processes a new event and persists the processed_events row', async () => {

@@ -7,7 +7,7 @@ import { Inbox } from '../inbox/Inbox';
 import { BaseEventSubscriber } from './BaseEventSubscriber';
 import { SubscribersConfig } from './subscribersConfig';
 import { ApplyVideoProcessingStartedUseCase } from '@use-cases/videoJob/ApplyVideoProcessingStartedUseCase';
-import { ConsoleLoggerService } from '@adapter/infra/services/ConsoleLoggerService';
+import type { LoggerPort } from '@domain/outboundPorts/LoggerPort';
 import type { z } from 'zod';
 
 type StartedPayload = z.infer<typeof VideoProcessingStartedPayloadSchema>;
@@ -16,7 +16,7 @@ export class VideoProcessingStartedSubscriber extends BaseEventSubscriber<Starte
   constructor(
     connection: AmqpConnection,
     inbox: Inbox,
-    logger: ConsoleLoggerService,
+    logger: LoggerPort,
     private readonly applyStarted: ApplyVideoProcessingStartedUseCase,
   ) {
     super(connection, inbox, logger, {

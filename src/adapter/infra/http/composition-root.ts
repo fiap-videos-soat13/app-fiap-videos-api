@@ -20,10 +20,8 @@ import {
 } from '@adapter/infra/repository/DrizzleRepositories';
 import { createObjectStorage } from '@adapter/infra/storage/storageFactory';
 import { VideoProcessingRequestedEnvelopeBuilder } from '@adapter/infra/messaging/builders/VideoProcessingRequestedEnvelopeBuilder';
-import {
-  ConsoleLoggerService,
-  PrometheusMetricsService,
-} from '@adapter/infra/services/ConsoleLoggerService';
+import { createLogger } from '@adapter/infra/logging/loggerFactory';
+import { PrometheusMetricsService } from '@adapter/infra/observability/PrometheusMetricsService';
 import { RedisCacheAdapter } from '@adapter/infra/services/RedisCacheAdapter';
 import { BcryptPasswordHasher, JwtTokenService } from '@adapter/infra/auth/AuthAdapters';
 import { AmqpConnection } from '@adapter/infra/messaging/amqp/AmqpConnection';
@@ -63,7 +61,7 @@ export type AppContext = {
 };
 
 export function buildApp(): AppContext {
-  const logger = new ConsoleLoggerService('app-fiap-videos-api');
+  const logger = createLogger('app-fiap-videos-api');
   const registry = new Registry();
   const httpMetrics = registerHttpMetrics(registry);
   const sagaMetrics = new SagaMetricsService(registry);
